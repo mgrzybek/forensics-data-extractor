@@ -1,0 +1,7 @@
+Makefile
+.DS_Store
+*.user
+*.o
+moc*
+ui_*
+forensics-data-extractor.app
