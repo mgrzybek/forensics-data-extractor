@@ -61,7 +61,7 @@ void Web_Browser_Extractor::run()
 	zmq::socket_t socket(context, ZMQ_SUB);
 
 	socket.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
-	socket.connect("ipc://forensics-indexer.inproc");
+	socket.connect("inproc://forensics-indexer.inproc");
 
 	while (1) {
 		QString string_message;

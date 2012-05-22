@@ -60,7 +60,7 @@ void Indexing_Engine::set_root_path(const QString& dir_path) {
 
 void Indexing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_path) {
 
-	socket.bind("ipc://forensics-indexer.inproc");
+	socket.bind("inproc://forensics-indexer.inproc");
 
 	QDir        path(dir_path);
 	QStringList directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden);
