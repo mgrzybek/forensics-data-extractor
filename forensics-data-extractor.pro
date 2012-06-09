@@ -28,7 +28,11 @@ QT		+= core gui sql
 TARGET		= forensics-data-extractor
 TEMPLATE	= app
 
-unix:LIBS	+= -lzmq
+# On Windows 0MQ's inproc is not supported, we use TCP connections instead
+win32:DEFINES	+= WINDOWS_OS
+win32:LIBS	+= -L../zeromq-2.1/lib32
+win32:INCLUDEPATH	+= ../zeromq-2.1/include
+LIBS		+= -lzmq
 
 SOURCES		+= src/main.cpp \
 		src/main_window.cpp \
@@ -38,6 +42,7 @@ SOURCES		+= src/main.cpp \
 		src/extractors/chrome_extractor.cpp
 
 HEADERS		+= src/main_window.h\
+		src/common.h \
 		src/indexing_engine.h \
 		src/extractors/firefox_extractor.h \
 		src/extractors/web_browser_extractor.h\
