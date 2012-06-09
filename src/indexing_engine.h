@@ -28,8 +28,10 @@
 #ifndef INDEXING_ENGINE_H
 #define INDEXING_ENGINE_H
 
+#include <magic.h>
 #include <zmq.hpp>
 
+#include <QStandardItemModel>
 #include <QTextEdit>
 #include <QThread>
 #include <QString>
@@ -38,21 +40,27 @@
 
 class Indexing_Engine : public QThread
 {
-public:
-	Indexing_Engine(const QString& root_path, QTextEdit* output);
-	Indexing_Engine(const QString& root_path);
-	~Indexing_Engine();
+	Q_OBJECT
 
-	void	run();
+	public:
+		Indexing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list);
+		~Indexing_Engine();
 
-	void	set_root_path(const QString& dir_path);
+		void	run();
 
-private:
-	QString		root_path;
-	QTextEdit*	output_area;
+		void	set_root_path(const QString& dir_path);
 
-	void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
-	void	send_zmq(const std::string& message, zmq::socket_t& socket);
+	signals:
+		void	ready();
+
+	private:
+		zmq::context_t*	zmq_context;
+		QString		root_path;
+		QStandardItemModel* files_list;
+//		magichandle_t*	magic_object;
+
+		void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
+		void	send_zmq(const std::string& message, zmq::socket_t& socket);
 };
 
 #endif // SEARCH_ENGINE_H

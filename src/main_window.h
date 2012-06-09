@@ -30,60 +30,60 @@
 
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QErrorMessage>
 #include <QFileSystemModel>
+#include <QSortFilterProxyModel>
 
+#include "common.h"
 #include "extractors/firefox_extractor.h"
 #include "extractors/chrome_extractor.h"
 #include "indexing_engine.h"
 
 namespace Ui {
-class Main_Window;
+	class Main_Window;
 }
 
 class Main_Window : public QMainWindow
 {
 	Q_OBJECT
 
-public:
-	explicit	Main_Window(QWidget *parent = 0);
-	~Main_Window();
+	public:
+		explicit	Main_Window(void* z_context, QWidget *parent = 0);
+		~Main_Window();
 
-private slots:
-	void	on_browse_button_clicked();
-	void	on_scan_button_clicked();
+		zmq::context_t*		zmq_context;
+	private slots:
+		void	on_browse_button_clicked();
+		void	on_scan_button_clicked();
 
-private:
-	/*
-	 * GUI Stuff
-	 */
-	Ui::Main_Window	*ui;
+		void	update_info();
+		void	launch_extractors();
 
-	/*
-	 * Models
-	 */
+	private:
+		/*
+		 * GUI Stuff
+		 */
+		Ui::Main_Window	*ui;
 
-	// cookies
-	QStandardItemModel	model_cookies;
-	// downloads
-	QStandardItemModel	model_downloads;
-	// forms
-	QStandardItemModel	model_forms;
-	// places
-	QStandardItemModel	model_places;
-	// search
-	QStandardItemModel	model_search;
-	// signons
-	QStandardItemModel	model_signons;
+		/*
+		 * Models
+		 */
+		web_browser_models	web_models;
 
-	/*
-	 * Processing classes
-	 */
-	Firefox_Extractor*	firefox_engine;
-	Chrome_Extractor*	chrome_engine;
-	Indexing_Engine*	search_engine;
+		// scanned files
+		QStandardItemModel	model_indexed_files;
+		// extracted files
+		QSortFilterProxyModel*	sorted_model_extracted_files;
 
-	void	process_scan();
-	void	clean_models();
+		/*
+		 * Processing classes
+		 */
+		Indexing_Engine*	search_engine;
+		Firefox_Extractor*	firefox_engine;
+		Chrome_Extractor*	chrome_engine;
+
+		void	process_scan();
+		void	clean_models();
 };
 
 #endif // MAIN_WINDOW_H

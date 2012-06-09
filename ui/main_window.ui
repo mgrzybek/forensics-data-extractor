@@ -25,39 +25,6 @@
         <string>Sélection du dossier</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0" colspan="3">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Sélectionnez le dossier personnel de l'utilisateur à scanner</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="4">
-         <widget class="QTextEdit" name="scan_status_text">
-          <property name="acceptRichText">
-           <bool>false</bool>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>136</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0" colspan="4">
-         <widget class="QLineEdit" name="directory_line"/>
-        </item>
         <item row="0" column="3">
          <spacer name="verticalSpacer_3">
           <property name="orientation">
@@ -71,7 +38,43 @@
           </property>
          </spacer>
         </item>
-        <item row="2" column="2" colspan="2">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Sélectionnez le dossier personnel de l'utilisateur à scanner</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="4">
+         <widget class="QLineEdit" name="directory_line"/>
+        </item>
+        <item row="3" column="0" colspan="4">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>793</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="4" column="0">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>600</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="4" column="1" colspan="3">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="scan_button">
@@ -89,61 +92,41 @@
           </item>
          </layout>
         </item>
-        <item row="4" column="1" colspan="3">
+        <item row="5" column="2">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>61</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>684</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="6" column="2" colspan="2">
          <layout class="QFormLayout" name="formLayout">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="cookies_label">
             <property name="text">
              <string>Cookies</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="downloads_label">
-            <property name="text">
-             <string>Téléchargements</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="forms_label">
-            <property name="text">
-             <string>Formulaire</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="places_label">
-            <property name="text">
-             <string>Places</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="search_label">
-            <property name="text">
-             <string>Recherche</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="signons_label">
-            <property name="text">
-             <string>Authentifiants</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="downloads_number">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLabel" name="search_number">
-            <property name="text">
-             <string>0</string>
             </property>
            </widget>
           </item>
@@ -154,10 +137,38 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="downloads_label">
+            <property name="text">
+             <string>Téléchargements</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="downloads_number">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="forms_label">
+            <property name="text">
+             <string>Formulaire</string>
+            </property>
+           </widget>
+          </item>
           <item row="2" column="1">
            <widget class="QLabel" name="forms_number">
             <property name="text">
              <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="places_label">
+            <property name="text">
+             <string>Places</string>
             </property>
            </widget>
           </item>
@@ -168,6 +179,27 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="search_label">
+            <property name="text">
+             <string>Recherche</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLabel" name="search_number">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="signons_label">
+            <property name="text">
+             <string>Authentifiants</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="1">
            <widget class="QLabel" name="signons_number">
             <property name="text">
@@ -175,20 +207,52 @@
             </property>
            </widget>
           </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="indexed_files_label">
+            <property name="text">
+             <string>Fichiers scannés</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="indexed_files_number">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
-        <item row="4" column="0">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+        <item row="7" column="0" colspan="4">
+         <widget class="QTabWidget" name="tab_processing">
+          <property name="currentIndex">
+           <number>1</number>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>600</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+          <widget class="QWidget" name="tab_indexing">
+           <attribute name="title">
+            <string>Indexation</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QListView" name="indexed_list">
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAlwaysOn</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_files_found">
+           <attribute name="title">
+            <string>Fichiers trouvés</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="QListView" name="extracted_list"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -200,7 +264,7 @@
         <item>
          <widget class="QToolBox" name="toolBox">
           <property name="currentIndex">
-           <number>3</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="cookies_page">
            <property name="geometry">
@@ -216,7 +280,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
-             <widget class="QTableView" name="cookies_view"/>
+             <widget class="QTableView" name="cookies_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -234,7 +302,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <widget class="QTableView" name="downloads_view"/>
+             <widget class="QTableView" name="downloads_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -252,7 +324,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QTableView" name="forms_view"/>
+             <widget class="QTableView" name="forms_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -261,8 +337,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>766</width>
-             <height>415</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">
@@ -270,7 +346,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <widget class="QTableView" name="places_view"/>
+             <widget class="QTableView" name="places_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -288,7 +368,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QTableView" name="search_view"/>
+             <widget class="QTableView" name="search_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -297,8 +381,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>766</width>
+             <height>415</height>
             </rect>
            </property>
            <attribute name="label">
@@ -306,7 +390,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QTableView" name="signons_view"/>
+             <widget class="QTableView" name="signons_view">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

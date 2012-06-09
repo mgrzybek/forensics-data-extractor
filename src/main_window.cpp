@@ -28,12 +28,15 @@
 #include "main_window.h"
 #include "ui_main_window.h"
 
-Main_Window::Main_Window(QWidget *parent) :
+Main_Window::Main_Window(void* z_context, QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::Main_Window)
 {
+	zmq_context = (zmq::context_t*) z_context;
+
 	chrome_engine = NULL;
 	firefox_engine = NULL;
+
 	ui->setupUi(this);
 
 	clean_models();
@@ -51,6 +54,9 @@ Main_Window::~Main_Window()
 
 	if ( search_engine != NULL )
 		delete search_engine;
+
+	if ( sorted_model_extracted_files != NULL )
+		delete sorted_model_extracted_files;
 }
 
 void Main_Window::on_browse_button_clicked()
@@ -63,37 +69,52 @@ void Main_Window::on_scan_button_clicked()
 	ui->scan_button->setDisabled(true);
 	process_scan();
 	ui->scan_button->setEnabled(true);
-
-	ui->cookies_number->setText(QString::number(model_cookies.rowCount()));
-	ui->downloads_number->setText(QString::number(model_downloads.rowCount()));
-	ui->forms_number->setText(QString::number(model_forms.rowCount()));
-	ui->places_number->setText(QString::number(model_places.rowCount()));
-	ui->search_number->setText(QString::number(model_search.rowCount()));
-	ui->signons_number->setText(QString::number(model_signons.rowCount()));
 }
+
+void Main_Window::update_info() {
+	ui->cookies_number->setText(QString::number(web_models.cookies.rowCount()));
+	ui->downloads_number->setText(QString::number(web_models.downloads.rowCount()));
+	ui->forms_number->setText(QString::number(web_models.forms.rowCount()));
+	ui->places_number->setText(QString::number(web_models.places.rowCount()));
+	ui->search_number->setText(QString::number(web_models.searches.rowCount()));
+	ui->signons_number->setText(QString::number(web_models.signons.rowCount()));
+	ui->indexed_files_number->setText(QString::number(model_indexed_files.rowCount()));
+
+	ui->cookies_view->resizeColumnsToContents();
+	ui->downloads_view->resizeColumnsToContents();
+	ui->forms_view->resizeColumnsToContents();
+	ui->places_view->resizeColumnsToContents();
+	ui->search_view->resizeColumnsToContents();
+	ui->signons_view->resizeColumnsToContents();
+}
+
+void Main_Window::launch_extractors() {
+	chrome_engine->start();
+	firefox_engine->start();
+}
+
 
 void Main_Window::process_scan() {
 	if ( ui->directory_line->text().isEmpty() == true ) {
 		return;
 	}
 
-	search_engine = new Indexing_Engine(ui->directory_line->text());
-//	search_engine = new Indexing_Engine(ui->directory_line->text(), ui->scan_status_text);
+	search_engine = new Indexing_Engine((void*)zmq_context, ui->directory_line->text(), &model_indexed_files);
 
-	chrome_engine = new Chrome_Extractor(&model_cookies, &model_downloads, &model_forms, &model_places, &model_search, &model_signons);
-	firefox_engine = new Firefox_Extractor(&model_cookies, &model_downloads, &model_forms, &model_places, &model_search, &model_signons);
+	chrome_engine = new Chrome_Extractor((void*)zmq_context, &web_models);
+	firefox_engine = new Firefox_Extractor((void*)zmq_context, &web_models);
 
 	/*
 	 * Clean the models to prevent duplicates
 	 */
 	clean_models();
+	connect(search_engine, SIGNAL(finished()), this, SLOT(update_info()));
+	connect(search_engine, SIGNAL(ready()), this, SLOT(launch_extractors()));
 
 	/*
 	 * Searching process
 	 */
 	search_engine->start();
-	chrome_engine->start();
-	firefox_engine->start();
 }
 
 void Main_Window::clean_models() {
@@ -103,53 +124,76 @@ void Main_Window::clean_models() {
 	 * Places
 	 */
 	headers << "Visites" << "Site";
-	model_places.clear();
-	model_places.setHorizontalHeaderLabels(headers);
-	ui->places_view->setModel(&model_places);
+	web_models.places.clear();
+	web_models.places.setHorizontalHeaderLabels(headers);
+	ui->places_view->setModel(&web_models.places);
 	headers.clear();
 
 	/*
 	 * Cookies
 	 */
-	headers << "Nom" <<  "Valeur" <<  "Hte" << "Chemin" <<  "Expiration" << "Scuris" << "HTTP" << "lastAccessed" << "Dernier accs";
-	model_cookies.clear();
-	model_cookies.setHorizontalHeaderLabels(headers);
-	ui->cookies_view->setModel(&model_cookies);
+	headers << "Nom" <<  "Valeur" <<  "Hôte" << "Chemin" <<  "Expiration" << "Scuris" << "HTTP" << "lastAccessed" << "Dernier accès";
+	web_models.cookies.clear();
+	web_models.cookies.setHorizontalHeaderLabels(headers);
+	ui->cookies_view->setModel(&web_models.cookies);
 	headers.clear();
 
 	/*
 	 * Downloads
 	 */
 	headers << "Name" << "Sources" << "Type MIME";
-	model_downloads.clear();
-	model_downloads.setHorizontalHeaderLabels(headers);
-	ui->downloads_view->setModel(&model_downloads);
+	web_models.downloads.clear();
+	web_models.downloads.setHorizontalHeaderLabels(headers);
+	ui->downloads_view->setModel(&web_models.downloads);
 	headers.clear();
 
 	/*
 	 * Forms
 	 */
 	headers << "Hte" << "Identifiant" << "Mot de passe";
-	model_forms.clear();
-	model_forms.setHorizontalHeaderLabels(headers);
-	ui->forms_view->setModel(&model_forms);
+	web_models.forms.clear();
+	web_models.forms.setHorizontalHeaderLabels(headers);
+	ui->forms_view->setModel(&web_models.forms);
 	headers.clear();
 
 	/*
 	 * Searches
 	 */
 	headers << "Noms" << "Valeurs";
-	model_search.clear();
-	model_search.setHorizontalHeaderLabels(headers);
-	ui->search_view->setModel(&model_search);
+	web_models.searches.clear();
+	web_models.searches.setHorizontalHeaderLabels(headers);
+	ui->search_view->setModel(&web_models.searches);
 	headers.clear();
 
 	/*
 	 * Signons
 	 */
 	headers << "Hôte" << "Identifiant" << "Mot de passe";
-	model_signons.clear();
-	model_signons.setHorizontalHeaderLabels(headers);
-	ui->signons_view->setModel(&model_signons);
+	web_models.signons.clear();
+	web_models.signons.setHorizontalHeaderLabels(headers);
+	ui->signons_view->setModel(&web_models.signons);
+	headers.clear();
+
+	/*
+	 * Indexed files list
+	 */
+	headers << "Fichiers";
+	model_indexed_files.clear();
+	model_indexed_files.setHorizontalHeaderLabels(headers);
+	ui->indexed_list->setModel(&model_indexed_files);
+	headers.clear();
+
+	/*
+	 * Extracted files list
+	 */
+	sorted_model_extracted_files = new QSortFilterProxyModel();
+	sorted_model_extracted_files->sort(1, Qt::AscendingOrder);
+	sorted_model_extracted_files->setDynamicSortFilter(true);
+	sorted_model_extracted_files->setSourceModel(&web_models.extracted_files);
+
+	headers << "Fichiers";
+	web_models.extracted_files.clear();
+	web_models.extracted_files.setHorizontalHeaderLabels(headers);
+	ui->extracted_list->setModel(sorted_model_extracted_files);
 	headers.clear();
 }

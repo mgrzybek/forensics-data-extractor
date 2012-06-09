@@ -30,8 +30,10 @@
 
 int main(int argc, char *argv[])
 {
+	zmq::context_t zmq_context(1);
 	QApplication a(argc, argv);
-	Main_Window w;
+
+	Main_Window w((void*)&zmq_context);
 	w.show();
 
 	return a.exec();

@@ -27,30 +27,38 @@
 
 #include "indexing_engine.h"
 
-Indexing_Engine::Indexing_Engine(const QString& r_path, QTextEdit* output)
+Indexing_Engine::Indexing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list) : QThread()
 {
+	zmq_context = (zmq::context_t*) z_context;
 	root_path = r_path;
-	output_area = output;
-}
+//	magic_object = magic_open(MAGIC_CHECK);
+	files_list = model_files_list;
 
-Indexing_Engine::Indexing_Engine(const QString& r_path)
-{
-	root_path = r_path;
-	output_area = NULL;
+//	if ( magic_object == NULL )
+//		qCritical() << "Cannot init the magic library";
+
 }
 
 Indexing_Engine::~Indexing_Engine() {
-	output_area = NULL;
 }
 
 void Indexing_Engine::run() {
-	if ( root_path.isEmpty() == false ) {
-		static zmq::context_t context(1);
-		static zmq::socket_t socket(context, ZMQ_PUB);
+	try {
+		if ( root_path.isEmpty() == false ) {
+			zmq::socket_t socket(*zmq_context, ZMQ_PUB);
+#ifdef WINDOWS_OS
+			socket.bind("tcp://127.0.0.1:5555");
+#else
+			socket.bind("inproc://forensics-indexer.inproc");
+#endif
+			emit ready();
 
-		recursive_search(socket, root_path);
-		qDebug() << "Indexing finished, sending 'END;' message to subscribers..";
-		send_zmq("END;", socket);
+			recursive_search(socket, root_path);
+			qDebug() << "Indexing finished, sending 'END;' message to subscribers..";
+			send_zmq("END;", socket);
+		}
+	} catch (const std::exception& e) {
+		qCritical() << "Indexing_Engine: " << e.what();
 	}
 }
 
@@ -59,15 +67,13 @@ void Indexing_Engine::set_root_path(const QString& dir_path) {
 }
 
 void Indexing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_path) {
-
-	socket.bind("inproc://forensics-indexer.inproc");
-
-	QDir        path(dir_path);
-	QStringList directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden);
-	QStringList files = path.entryList(QDir::Files | QDir::Hidden);
+	QDir		path(dir_path);
+	QStringList	directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden);
+	QStringList	files = path.entryList(QDir::Files | QDir::Hidden);
 
 	Q_FOREACH(QString file, files) {
 		QString abs_path_file;
+		QList<QStandardItem*>	row;
 
 		abs_path_file = dir_path;
 		abs_path_file += "/";
@@ -75,10 +81,8 @@ void Indexing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir
 
 		send_zmq(abs_path_file.toStdString(), socket);
 
-//		if ( output_area == NULL )
-//			qDebug() << abs_path_file;
-//		else
-//			output_area->append(abs_path_file);
+		row << new QStandardItem(abs_path_file);
+		files_list->appendRow(row);
 	}
 
 	Q_FOREACH(QString dir, directories) {
