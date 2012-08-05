@@ -37,67 +37,48 @@
 
 #include <zmq.hpp>
 
+#include "../common.h"
+
 #define SQLITE_OPEN(db_file) \
 	QSqlDatabase db; \
 	db = QSqlDatabase::addDatabase("QSQLITE",db_file); \
 	db.setDatabaseName(db_file); \
 	\
 	if (!db.open()) { \
-		qCritical() << "Cannoct connect to the database"; \
+		qCritical() << "Cannot connect to the database " << db_file; \
 		return; \
-	} \
-	\
-	qDebug() << "Connected to " << db_file;
+	}
 
 #define SQLITE_CLOSE(db_file) \
 	QSqlDatabase::removeDatabase(db_file);
 
 class Web_Browser_Extractor : public QThread
 {
-public:
-	Web_Browser_Extractor(
-		QStandardItemModel* cookies,
-		QStandardItemModel* downloads,
-		QStandardItemModel* forms,
-		QStandardItemModel* places,
-		QStandardItemModel* search,
-		QStandardItemModel* signons
-	);
+	public:
+		Web_Browser_Extractor(void* z_context, web_browser_models* web_models);
 
-	~Web_Browser_Extractor();
+		~Web_Browser_Extractor();
 
-	void	run();
+		void	run();
 
-	virtual void	files_filter(const QString& file_path) = 0;
+		virtual void	files_filter(const QString& file_path) = 0;
 
-	virtual void	extract_places(const QString& file) = 0;
-	virtual void	extract_cookies(const QString& file) = 0;
-	virtual void	extract_downloads(const QString& file) = 0;
-	virtual void	extract_forms(const QString& file) = 0;
-	virtual void	extract_search(const QString& file) = 0;
-	virtual void	extract_signons(const QString& file) = 0;
+		virtual void	extract_places(const QString& file) = 0;
+		virtual void	extract_cookies(const QString& file) = 0;
+		virtual void	extract_downloads(const QString& file) = 0;
+		virtual void	extract_forms(const QString& file) = 0;
+		virtual void	extract_search(const QString& file) = 0;
+		virtual void	extract_signons(const QString& file) = 0;
 
-protected:
-	QString			dir_path;
+	protected:
+		zmq::context_t*		zmq_context;
+		QString			dir_path;
 
-	// cookies
-	QStringList		files_cookies;
-	QStandardItemModel*	model_cookies;
-	// downloads
-	QStringList		files_downloads;
-	QStandardItemModel*	model_downloads;
-	// forms
-	QStringList		files_forms;
-	QStandardItemModel*	model_forms;
-	// places
-	QStringList		files_places;
-	QStandardItemModel*	model_places;
-	// search
-	QStringList		files_search;
-	QStandardItemModel*	model_search;
-	// signons
-	QStringList		files_signons;
-	QStandardItemModel*	model_signons;
+		web_browser_models*		models;
+		web_browser_analysed_files	files;
+
+		void	append_extracted_files_to_model_files();
+		void	append_files_to_model_files(const QStringList& f);
 };
 
 #endif // WEB_BROWSER_EXTRACTOR_H

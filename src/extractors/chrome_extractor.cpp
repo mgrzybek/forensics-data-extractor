@@ -28,22 +28,13 @@
 #include "chrome_extractor.h"
 
 Chrome_Extractor::Chrome_Extractor(
-	QStandardItemModel* cookies,
-	QStandardItemModel* downloads,
-	QStandardItemModel* forms,
-	QStandardItemModel* places,
-	QStandardItemModel* search,
-	QStandardItemModel* signons
-	) : Web_Browser_Extractor(
-		cookies,
-		downloads,
-		forms,
-		places,
-		search,
-		signons
-)
+		void*			z_context,
+		web_browser_models*	models
+		) : Web_Browser_Extractor(
+			z_context,
+			models
+			)
 {
-
 }
 
 Chrome_Extractor::~Chrome_Extractor() {
@@ -54,26 +45,21 @@ void Chrome_Extractor::files_filter(const QString& file_path) {
 	QString file = file_path_parts.at(file_path_parts.size() - 1);
 
 	if ( file.compare("Cookies") == 0 ) {
-		files_cookies << file_path;
-		qDebug() << "files_filter: Cookies: " << file;
+		files.cookies << file_path;
 		extract_places(file_path);
 	}
 	if ( file.compare("History") == 0 ) {
-		files_downloads << file_path;
-		qDebug() << "files_filter: Downloads: " << file;
+		files.downloads << file_path;
 		extract_downloads(file_path);
 
-		files_places << file_path;
-		qDebug() << "files_filter: Places: " << file;
+		files.places << file_path;
 		extract_places(file_path);
 
-		files_search << file_path;
-		qDebug() << "files_filter: Files: " << file;
+		files.searches << file_path;
 		extract_search(file_path);
 	}
 	if ( file.compare("Login Data") == 0 ) {
-		files_signons << file_path;
-		qDebug() << "files_filter: Login: " << file;
+		files.signons << file_path;
 		extract_signons(file_path);
 	}
 }
@@ -82,20 +68,25 @@ void Chrome_Extractor::extract_places(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_places: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
-
+#ifdef WINDOWS_OS
+		QRegExp	url_cleaner("^https{0,1}\:\/\/(.*?)\/.*?$");
+#else
+		QRegExp	url_cleaner("^https{0,1}\\:\\/\\/(.*?)\\/.*?$");
+#endif
 		query.exec("SELECT visit_count, url FROM urls ORDER BY visit_count, url;");
 
 		while (query.next()) {
+			QString cleaned_url = query.value(1).toString();
+			url_cleaner.indexIn(cleaned_url);
+
 			row.clear();
 
 			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
+			row << new QStandardItem(url_cleaner.cap(1));
 
-			model_places->appendRow(row);
+			models->places.appendRow(row);
 		}
 		query.clear();
 	}
@@ -106,9 +97,7 @@ void Chrome_Extractor::extract_cookies(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_cookies: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT name, value, host_key, path, has_expires, secure, httponly, last_access_utc FROM cookies ORDER BY last_access_utc;");
@@ -124,7 +113,7 @@ void Chrome_Extractor::extract_cookies(const QString& file) {
 			row << new QStandardItem(query.value(5).toString());
 			row << new QStandardItem(query.value(6).toString());
 
-			model_cookies->appendRow(row);
+			models->cookies.appendRow(row);
 		}
 		query.clear();
 	}
@@ -135,9 +124,7 @@ void Chrome_Extractor::extract_downloads(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_downloads: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT full_path, url FROM downloads ORDER BY start_time;");
@@ -148,7 +135,7 @@ void Chrome_Extractor::extract_downloads(const QString& file) {
 			row << new QStandardItem(query.value(0).toString());
 			row << new QStandardItem(query.value(1).toString());
 
-			model_downloads->appendRow(row);
+			models->downloads.appendRow(row);
 		}
 		query.clear();
 	}
@@ -159,9 +146,7 @@ void Chrome_Extractor::extract_forms(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_places: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT action_url, username_value, password_value FROM logins ORDER BY action_url;");
@@ -173,7 +158,7 @@ void Chrome_Extractor::extract_forms(const QString& file) {
 			row << new QStandardItem(query.value(1).toString());
 			row << new QStandardItem(query.value(2).toString());
 
-			model_forms->appendRow(row);
+			models->forms.appendRow(row);
 		}
 		query.clear();
 	}
@@ -184,9 +169,7 @@ void Chrome_Extractor::extract_search(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_search: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery	query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT k.term, u.url FROM keyword_search_terms k, urls u WHERE k.url_id = u.id ORDER BY k.term;");
@@ -197,7 +180,7 @@ void Chrome_Extractor::extract_search(const QString& file) {
 			row << new QStandardItem(query.value(0).toString());
 			row << new QStandardItem(query.value(1).toString());
 
-			model_search->appendRow(row);
+			models->searches.appendRow(row);
 		}
 		query.clear();
 	}
@@ -208,9 +191,7 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		qDebug() << "extract_signons: " << file;
-
-		QSqlQuery   query(db);
+		QSqlQuery	query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT action_url, username_value, password_value FROM logins ORDER BY action_url;");
@@ -222,7 +203,7 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 			row << new QStandardItem(query.value(1).toString());
 			row << new QStandardItem(query.value(2).toString());
 
-			model_signons->appendRow(row);
+			models->signons.appendRow(row);
 		}
 		query.clear();
 	}

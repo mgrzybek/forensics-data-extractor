@@ -28,52 +28,74 @@
 #include "web_browser_extractor.h"
 
 Web_Browser_Extractor::Web_Browser_Extractor(
-	QStandardItemModel* cookies,
-	QStandardItemModel* downloads,
-	QStandardItemModel* forms,
-	QStandardItemModel* places,
-	QStandardItemModel* search,
-	QStandardItemModel* signons
-)
+		void*			z_context,
+		web_browser_models*	web_models
+		)
 {
-	model_cookies   = cookies;
-	model_downloads = downloads;
-	model_forms     = forms;
-	model_places    = places;
-	model_search    = search;
-	model_signons   = signons;
+	zmq_context	= (zmq::context_t*) z_context;
+	models		= web_models;
 }
 
 Web_Browser_Extractor::~Web_Browser_Extractor() {
 	dir_path.clear();
-
-	model_cookies   = NULL;
-	model_downloads = NULL;
-	model_forms     = NULL;
-	model_places    = NULL;
-	model_search    = NULL;
-	model_signons   = NULL;
 }
 
 void Web_Browser_Extractor::run()
 {
-	zmq::context_t context(1);
-	zmq::socket_t socket(context, ZMQ_SUB);
+	zmq::socket_t	socket(*zmq_context, ZMQ_SUB);
+	bool		connected = false;
 
-	socket.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
-	socket.connect("inproc://forensics-indexer.inproc");
+	while ( connected == false ) {
+		try {
+			socket.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
+#ifdef WINDOWS_OS
+			socket.connect("tcp://127.0.0.1:5555");
+#else
+			socket.connect("inproc://forensics-indexer.inproc");
+#endif
+			connected = true;
+			while (1) {
+				QString string_message;
+				zmq::message_t  z_message;
 
-	while (1) {
-		QString string_message;
-		zmq::message_t  z_message;
+				socket.recv(&z_message);
+				string_message = static_cast<char*>(z_message.data());
 
-		socket.recv(&z_message);
-		string_message = static_cast<char*>(z_message.data());
-//		qDebug() << "subscriber: " << string_message;
-
-		if ( string_message.compare("END;") != 0 )
-			files_filter(string_message);
-		else
-			return;
+				if ( string_message.compare("END;") != 0 )
+					files_filter(string_message);
+				else
+					break;
+			}
+			append_extracted_files_to_model_files();
+		} catch (const std::exception& e) {
+			qCritical() << "Web_Browser_Extractor: " << e.what();
+		}
 	}
 }
+
+
+void Web_Browser_Extractor::append_extracted_files_to_model_files() {
+	// cookies
+	append_files_to_model_files(files.cookies);
+	// downloads
+	append_files_to_model_files(files.downloads);
+	// forms
+	append_files_to_model_files(files.forms);
+	// places
+	append_files_to_model_files(files.places);
+	// search
+	append_files_to_model_files(files.searches);
+	// signons
+	append_files_to_model_files(files.signons);
+}
+
+void Web_Browser_Extractor::append_files_to_model_files(const QStringList& f) {
+	QList<QStandardItem*>	row;
+
+	Q_FOREACH (QString file, f) {
+		row << new QStandardItem(file);
+		models->extracted_files.appendRow(row);
+		row.clear();
+	}
+}
+

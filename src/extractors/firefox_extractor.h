@@ -32,29 +32,28 @@
 
 class Firefox_Extractor : public Web_Browser_Extractor
 {
-public:
-	Firefox_Extractor(
-		QStandardItemModel* cookies,
-		QStandardItemModel* downloads,
-		QStandardItemModel* forms,
-		QStandardItemModel* places,
-		QStandardItemModel* search,
-		QStandardItemModel* signons
-	);
+	public:
+		Firefox_Extractor(
+				void*			z_context,
+				web_browser_models*	models
+				);
 
-	~Firefox_Extractor();
+		~Firefox_Extractor();
 
-	virtual void        files_filter(const QString& file_path);
+		virtual void	files_filter(const QString& file_path);
 
-	void	extract_places(const QString& file);
-	void	extract_cookies(const QString& file);
-	void	extract_downloads(const QString& file);
-	void	extract_forms(const QString& file);
-	void	extract_search(const QString& file);
-	void	extract_signons(const QString& file);
+		// TODO: think of scanning RDF files
+		void	extract_places(const QString& file);
+		void	extract_cookies(const QString& file);
+		void	extract_downloads(const QString& file);
+		void	extract_forms(const QString& file);
+		void	extract_search(const QString& file);
+		void	extract_signons(const QString& file);
 
-private:
-	//    void    search_files(const QString& dir_path);
+	private:
+		//    void    search_files(const QString& dir_path);
+		QSqlDatabase	sorting_db;
+		bool	sorting_db_init();
 };
 
 #endif // FIREFOX_EXTRACTOR_H

@@ -39,13 +39,15 @@ SOURCES		+= src/main.cpp \
 		src/indexing_engine.cpp \
 		src/extractors/firefox_extractor.cpp \
 		src/extractors/web_browser_extractor.cpp \
-		src/extractors/chrome_extractor.cpp
+		src/extractors/chrome_extractor.cpp \
+		src/sqlite_backend.cpp
 
 HEADERS		+= src/main_window.h\
 		src/common.h \
 		src/indexing_engine.h \
 		src/extractors/firefox_extractor.h \
 		src/extractors/web_browser_extractor.h\
-		src/extractors/chrome_extractor.h
+		src/extractors/chrome_extractor.h \
+		src/sqlite_backend.h
 
 FORMS		+= ui/main_window.ui

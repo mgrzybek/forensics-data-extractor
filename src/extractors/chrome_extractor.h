@@ -33,27 +33,23 @@
 
 class Chrome_Extractor : public Web_Browser_Extractor
 {
-public:
-	Chrome_Extractor(
-		QStandardItemModel* cookies,
-		QStandardItemModel* downloads,
-		QStandardItemModel* forms,
-		QStandardItemModel* places,
-		QStandardItemModel* search,
-		QStandardItemModel* signons
-	);
+	public:
+		Chrome_Extractor(
+				void*			z_context,
+				web_browser_models*	models
+				);
 
-	~Chrome_Extractor();
+		~Chrome_Extractor();
 
-	virtual void	files_filter(const QString& file_path);
+		virtual void	files_filter(const QString& file_path);
 
-private:
-	void	extract_places(const QString& file);
-	void	extract_cookies(const QString& file);
-	void	extract_downloads(const QString& file);
-	void	extract_forms(const QString& file);
-	void	extract_search(const QString& file);
-	void	extract_signons(const QString& file);
+	private:
+		void	extract_places(const QString& file);
+		void	extract_cookies(const QString& file);
+		void	extract_downloads(const QString& file);
+		void	extract_forms(const QString& file);
+		void	extract_search(const QString& file);
+		void	extract_signons(const QString& file);
 };
 
 #endif // CHROME_EXTRACTOR_H
