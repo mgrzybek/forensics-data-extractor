@@ -28,9 +28,11 @@
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
 
+#include <QDir>
+#include <QtSql>
 #include <QFileDialog>
 #include <QMainWindow>
-#include <QErrorMessage>
+#include <QMessageBox>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
 
@@ -38,6 +40,7 @@
 #include "extractors/firefox_extractor.h"
 #include "extractors/chrome_extractor.h"
 #include "indexing_engine.h"
+#include "sqlite_backend.h"
 
 namespace Ui {
 	class Main_Window;
@@ -59,7 +62,15 @@ class Main_Window : public QMainWindow
 		void	update_info();
 		void	launch_extractors();
 
-	private:
+		void on_action_New_Analysis_triggered();
+
+		void on_action_Quit_triggered();
+
+		void on_action_Open_Analysis_triggered();
+
+		void on_action_Close_Analysis_triggered();
+
+private:
 		/*
 		 * GUI Stuff
 		 */
@@ -76,6 +87,12 @@ class Main_Window : public QMainWindow
 		QSortFilterProxyModel*	sorted_model_extracted_files;
 
 		/*
+		 * Working files
+		 */
+		QString		working_directory;
+		Sqlite_Backend*	db;
+
+		/*
 		 * Processing classes
 		 */
 		Indexing_Engine*	search_engine;
@@ -84,6 +101,8 @@ class Main_Window : public QMainWindow
 
 		void	process_scan();
 		void	clean_models();
+
+		bool	init_db(const QString& db_file);
 };
 
 #endif // MAIN_WINDOW_H

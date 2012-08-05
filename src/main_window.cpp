@@ -34,17 +34,24 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 {
 	zmq_context = (zmq::context_t*) z_context;
 
+	db = NULL;
 	chrome_engine = NULL;
 	firefox_engine = NULL;
+	search_engine = NULL;
+	sorted_model_extracted_files = NULL;
 
 	ui->setupUi(this);
 
+	ui->tab_results->setVisible(false);
 	clean_models();
 }
 
 Main_Window::~Main_Window()
 {
 	delete ui;
+
+	if ( db != NULL )
+		delete db;
 
 	if ( chrome_engine != NULL )
 		delete chrome_engine;
@@ -89,8 +96,8 @@ void Main_Window::update_info() {
 }
 
 void Main_Window::launch_extractors() {
-	chrome_engine->start();
-	firefox_engine->start();
+//	chrome_engine->start();
+//	firefox_engine->start();
 }
 
 
@@ -99,7 +106,7 @@ void Main_Window::process_scan() {
 		return;
 	}
 
-	search_engine = new Indexing_Engine((void*)zmq_context, ui->directory_line->text(), &model_indexed_files);
+	search_engine = new Indexing_Engine((void*)zmq_context, db, ui->directory_line->text(), &model_indexed_files);
 
 	chrome_engine = new Chrome_Extractor((void*)zmq_context, &web_models);
 	firefox_engine = new Firefox_Extractor((void*)zmq_context, &web_models);
@@ -196,4 +203,80 @@ void Main_Window::clean_models() {
 	web_models.extracted_files.setHorizontalHeaderLabels(headers);
 	ui->extracted_list->setModel(sorted_model_extracted_files);
 	headers.clear();
+}
+
+void Main_Window::on_action_New_Analysis_triggered()
+{
+	QString dir = QFileDialog::getSaveFileName(this, "New Analysis", "~/", "");
+
+	if ( dir.isEmpty() == true )
+		return;
+
+	dir.replace(":","/");
+
+	QDir	project_directory(dir);
+
+	if ( project_directory.mkdir(project_directory.path()) == false ) {
+		QMessageBox::critical(this, tr("Creation failed"), tr("The project cannot be created"));
+	} else {
+		QString db_file;
+
+		working_directory = project_directory.path();
+
+		db_file += working_directory + "/index.db";
+		init_db(db_file);
+
+		ui->action_New_Analysis->setDisabled(true);
+		ui->action_Open_Analysis->setDisabled(true);
+
+		ui->tab_results->setVisible(true);
+	}
+}
+
+void Main_Window::on_action_Quit_triggered()
+{
+	setAttribute(Qt::WA_DeleteOnClose);
+	close();
+}
+
+void Main_Window::on_action_Open_Analysis_triggered()
+{
+	QString buffer_file = QFileDialog::getOpenFileName(this, "Open Analysis", "~/", "");
+
+	if ( buffer_file.isEmpty() == true )
+		return;
+
+	QFileInfo	project_file(buffer_file);
+	working_directory = project_file.absoluteDir().dirName();
+
+	ui->action_New_Analysis->setDisabled(true);
+	ui->action_Open_Analysis->setDisabled(true);
+
+	ui->tab_results->setVisible(true);
+}
+
+void Main_Window::on_action_Close_Analysis_triggered()
+{
+	ui->action_Close_Analysis->setDisabled(true);
+	ui->action_New_Analysis->setEnabled(true);
+	ui->action_Open_Analysis->setEnabled(true);
+
+	ui->tab_results->setVisible(false);
+}
+
+bool Main_Window::init_db(const QString& db_file) {
+	if ( db_file.isEmpty() == true )
+		return false;
+
+	db = new Sqlite_Backend(db_file);
+
+	if ( db->open_db() == false )
+		return false;
+
+	db->exec("CREATE TABLE IF NOT EXIST file ( file_id INTEGER, basename TEXT NOT NULL, complete_suffix TEXT NOT NULL, canonical_path TEXT NOT NULL, size INTEGER NOT NULL, last_modified INTEGER NOT NULL, last_read INTEGER NOT NULL);");
+
+//	db.exec("CREATE TABLE mime_type ();");
+
+
+	return true;
 }

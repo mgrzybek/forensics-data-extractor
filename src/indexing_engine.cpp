@@ -27,9 +27,10 @@
 
 #include "indexing_engine.h"
 
-Indexing_Engine::Indexing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list) : QThread()
+Indexing_Engine::Indexing_Engine(void* z_context, Sqlite_Backend* index_db, const QString& r_path, QStandardItemModel* model_files_list) : QThread()
 {
 	zmq_context = (zmq::context_t*) z_context;
+	db = index_db;
 	root_path = r_path;
 //	magic_object = magic_open(MAGIC_CHECK);
 	files_list = model_files_list;
@@ -37,6 +38,12 @@ Indexing_Engine::Indexing_Engine(void* z_context, const QString& r_path, QStanda
 //	if ( magic_object == NULL )
 //		qCritical() << "Cannot init the magic library";
 
+//	try {
+//		dbc.connect("localhost");
+//	} catch (const DBException& e) {
+	//	QErrorMessage msg = new QErrorMessage();
+//		QCritical() << e.what();
+//	}
 }
 
 Indexing_Engine::~Indexing_Engine() {
@@ -52,9 +59,11 @@ void Indexing_Engine::run() {
 			socket.bind("inproc://forensics-indexer.inproc");
 #endif
 			emit ready();
+			wait(1);
 
 			recursive_search(socket, root_path);
-			qDebug() << "Indexing finished, sending 'END;' message to subscribers..";
+
+			qDebug() << "Indexing finished, sending 'END;' message to subscribers...";
 			send_zmq("END;", socket);
 		}
 	} catch (const std::exception& e) {
@@ -66,18 +75,43 @@ void Indexing_Engine::set_root_path(const QString& dir_path) {
 	root_path = dir_path;
 }
 
+void Indexing_Engine::index_file(const QString& directory, const QString& file) {
+	QFileInfo	file_info(directory, file);
+	QString		query;
+
+	db->open_db();
+
+// TODO: escape the "'" characters from the fields
+
+//	query = "INSERT INTO file (file_id, basename, complete_suffix, canonical_path, size, last_modified, last_read) VALUES ('";
+	query = "INSERT INTO file (basename, complete_suffix, canonical_path, size, last_modified, last_read) VALUES ('";
+
+	query += file_info.baseName() + "','";
+	query += file_info.completeSuffix() + "','";
+	query += file_info.canonicalPath() + "','";
+	query += QString::number(file_info.size()) + "','"; // in bytes
+	query += file_info.lastModified().toString(Qt::ISODate) + "','";
+	query += file_info.lastRead().toString(Qt::ISODate) + "');";
+
+	qDebug() << query;
+
+	db->exec(query);
+}
+
 void Indexing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_path) {
 	QDir		path(dir_path);
 	QStringList	directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden);
 	QStringList	files = path.entryList(QDir::Files | QDir::Hidden);
 
 	Q_FOREACH(QString file, files) {
-		QString abs_path_file;
+		QString		abs_path_file;
 		QList<QStandardItem*>	row;
 
 		abs_path_file = dir_path;
 		abs_path_file += "/";
 		abs_path_file += file;
+
+		index_file(dir_path, file);
 
 		send_zmq(abs_path_file.toStdString(), socket);
 

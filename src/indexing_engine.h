@@ -32,18 +32,23 @@
 #include <zmq.hpp>
 
 #include <QStandardItemModel>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QTextEdit>
+#include <QDateTime>
 #include <QThread>
 #include <QString>
 #include <QDebug>
 #include <QDir>
+
+#include "sqlite_backend.h"
 
 class Indexing_Engine : public QThread
 {
 	Q_OBJECT
 
 	public:
-		Indexing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list);
+		Indexing_Engine(void* z_context, Sqlite_Backend* index_db, const QString& r_path, QStandardItemModel* model_files_list);
 		~Indexing_Engine();
 
 		void	run();
@@ -54,11 +59,25 @@ class Indexing_Engine : public QThread
 		void	ready();
 
 	private:
+		/*
+		 * Attributes
+		 */
+		// Messaging
 		zmq::context_t*	zmq_context;
+
+		// Files data
 		QString		root_path;
 		QStandardItemModel* files_list;
 //		magichandle_t*	magic_object;
 
+		// Database
+//		mongo::DBClientConnection	db;
+		Sqlite_Backend*			db;
+
+		/*
+		 * Methods
+		 */
+		void	index_file(const QString& directory, const QString& file);
 		void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
 		void	send_zmq(const std::string& message, zmq::socket_t& socket);
 };
