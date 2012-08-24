@@ -28,6 +28,8 @@
 #ifndef FIREFOX_EXTRACTOR_H
 #define FIREFOX_EXTRACTOR_H
 
+#include <QMap>
+
 #include "web_browser_extractor.h"
 
 class Firefox_Extractor : public Web_Browser_Extractor
@@ -51,9 +53,8 @@ class Firefox_Extractor : public Web_Browser_Extractor
 		void	extract_signons(const QString& file);
 
 	private:
-		//    void    search_files(const QString& dir_path);
-		QSqlDatabase	sorting_db;
-		bool	sorting_db_init();
+//		void	search_files(const QString& dir_path);
 };
 
 #endif // FIREFOX_EXTRACTOR_H
+

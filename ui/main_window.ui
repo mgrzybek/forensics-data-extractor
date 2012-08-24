@@ -77,6 +77,13 @@
         <item row="4" column="1" colspan="3">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
+           <widget class="QPushButton" name="index_button">
+            <property name="text">
+             <string>Indexer</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="scan_button">
             <property name="text">
              <string>Scanner</string>
@@ -267,15 +274,15 @@
         <item>
          <widget class="QToolBox" name="toolBox">
           <property name="currentIndex">
-           <number>5</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="cookies_page">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>796</width>
+             <height>471</height>
             </rect>
            </property>
            <attribute name="label">
@@ -287,6 +294,9 @@
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -296,8 +306,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>96</width>
+             <height>93</height>
             </rect>
            </property>
            <attribute name="label">
@@ -309,6 +319,9 @@
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -318,8 +331,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>96</width>
+             <height>93</height>
             </rect>
            </property>
            <attribute name="label">
@@ -331,6 +344,9 @@
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -340,8 +356,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>96</width>
+             <height>93</height>
             </rect>
            </property>
            <attribute name="label">
@@ -353,6 +369,9 @@
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -362,8 +381,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>102</width>
-             <height>102</height>
+             <width>96</width>
+             <height>93</height>
             </rect>
            </property>
            <attribute name="label">
@@ -375,6 +394,9 @@
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -384,8 +406,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>766</width>
-             <height>415</height>
+             <width>96</width>
+             <height>93</height>
             </rect>
            </property>
            <attribute name="label">
@@ -395,6 +417,9 @@
             <item>
              <widget class="QTableView" name="signons_view">
               <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="sortingEnabled">
                <bool>true</bool>
               </property>
              </widget>
@@ -428,7 +453,20 @@
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
+   <widget class="QMenu" name="menu_dition">
+    <property name="title">
+     <string>Édition</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="action_Preferences"/>
+   </widget>
    <addaction name="menuFichier"/>
+   <addaction name="menu_dition"/>
+   <addaction name="menuOptions"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -466,6 +504,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="action_Preferences">
+   <property name="text">
+    <string>Préférences</string>
    </property>
   </action>
  </widget>

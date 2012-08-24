@@ -1,9 +1,9 @@
 /**
  * Project: forensics-data-extractor
- * File name: indexing_engine.h
- * Description: describes the indexing engine that lists and processes the files
+ * File name: parsing_engine.h
+ * Description: describes the parsing engine that lists and processes the files
  *
- * @author Mathieu Grzybek on 2012-05-20
+ * @author Mathieu Grzybek on 2012-08-21
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
@@ -25,8 +25,8 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef INDEXING_ENGINE_H
-#define INDEXING_ENGINE_H
+#ifndef PARSING_ENGINE_H
+#define PARSING_ENGINE_H
 
 //#include <magic.h>
 #include <zmq.hpp>
@@ -43,21 +43,43 @@
 #include <QFile>
 #include <QDir>
 
-// TODO: do we really need a QThread object here?
-class Indexing_Engine : public QThread
+class Parsing_Engine : public QThread
 {
-	public:
-		Indexing_Engine(const QString& e_path, const QString& w_directory);
-		void   run();
+	Q_OBJECT
 
-		void    add_indexed_folders(const QStringList& folders);
+	public:
+		Parsing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list);
+		~Parsing_Engine();
+
+		void	run();
+
+		void	set_root_path(const QString& dir_path);
+
+	signals:
+		void	ready();
+
+	private slots:
+			//			void	stop_scan();
 
 	private:
-		QString engine_path;
-		QString working_directory;
-		QStringList     indexed_folders;
-		bool    create_conf_file();
+			/*
+			 * Attributes
+			 */
+			// Messaging
+			zmq::context_t*	zmq_context;
+			bool		continue_scan;
+
+			// Files data
+			QString			root_path;
+			QStandardItemModel	*files_list;
+//			magichandle_t*	magic_object;
+
+			/*
+			 * Methods
+			 */
+			void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
+			void	send_zmq(const std::string& message, zmq::socket_t& socket);
 };
 
-#endif // SEARCH_ENGINE_H
+#endif // PARSING_ENGINE_H
 

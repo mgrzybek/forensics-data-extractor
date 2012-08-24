@@ -37,7 +37,7 @@ Web_Browser_Extractor::Web_Browser_Extractor(
 }
 
 Web_Browser_Extractor::~Web_Browser_Extractor() {
-	dir_path.clear();
+
 }
 
 void Web_Browser_Extractor::run()
@@ -51,7 +51,7 @@ void Web_Browser_Extractor::run()
 #ifdef WINDOWS_OS
 			socket.connect("tcp://127.0.0.1:5555");
 #else
-			socket.connect("inproc://forensics-indexer.inproc");
+			socket.connect("inproc://forensics-parser.inproc");
 #endif
 			connected = true;
 			while (1) {
@@ -71,8 +71,11 @@ void Web_Browser_Extractor::run()
 			qCritical() << "Web_Browser_Extractor: " << e.what();
 		}
 	}
+	connected = false;
+	update_model_places();
+	emit finished();
+	qDebug() << "Web_Browser_Extrator: thread end";
 }
-
 
 void Web_Browser_Extractor::append_extracted_files_to_model_files() {
 	// cookies
@@ -97,5 +100,35 @@ void Web_Browser_Extractor::append_files_to_model_files(const QStringList& f) {
 		models->extracted_files.appendRow(row);
 		row.clear();
 	}
+}
+
+void	Web_Browser_Extractor::update_url_map(const QString& url, const uint& count) {
+	if ( url.isEmpty() == false and count > 0 ) {
+		QMap<QString, uint>::iterator iter = url_map.find(url);
+
+		if ( iter == url_map.end() ) {
+			url_map.insert(url, count);
+		} else {
+			iter.value() += count;
+		}
+	}
+}
+
+void Web_Browser_Extractor::update_model_places() {
+	QList<QStandardItem*>	row;
+
+	dir_path.clear();
+
+	for ( QMap<QString, uint>::const_iterator iter = url_map.begin() ; iter != url_map.end() ; iter++ ) {
+		row.clear();
+
+		row << new QStandardItem(QString::number(iter.value()));
+		row << new QStandardItem(iter.key());
+
+		models->places.appendRow(row);
+	}
+	row.clear();
+	// TODO: keep clear() ?
+	url_map.clear();
 }
 

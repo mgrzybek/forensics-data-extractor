@@ -1,7 +1,7 @@
 /**
  * Project: forensics-data-extractor
- * File name: chrome_extractor.h
- * Description: describes the object used to process Chrome / Chromium data
+ * File name: configuration.cpp
+ * Description: describes the configuration dialog
  *
  * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
@@ -25,32 +25,23 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef CHROME_EXTRACTOR_H
-#define CHROME_EXTRACTOR_H
+#include "src/configuration.h"
+#include "ui_configuration.h"
 
-#include "web_browser_extractor.h"
-
-
-class Chrome_Extractor : public Web_Browser_Extractor
+Configuration::Configuration(QWidget *parent) :
+	QDialog(parent),
+	ui(new Ui::Configuration)
 {
-	public:
-		Chrome_Extractor(
-				void*			z_context,
-				web_browser_models*	models
-				);
+	ui->setupUi(this);
+}
 
-		~Chrome_Extractor();
+Configuration::~Configuration()
+{
+	delete ui;
+}
 
-		virtual void	files_filter(const QString& file_path);
-
-	private:
-		void	extract_places(const QString& file);
-		void	extract_cookies(const QString& file);
-		void	extract_downloads(const QString& file);
-		void	extract_forms(const QString& file);
-		void	extract_search(const QString& file);
-		void	extract_signons(const QString& file);
-};
-
-#endif // CHROME_EXTRACTOR_H
+void Configuration::on_tool_string_daemon_path_clicked()
+{
+	ui->line_strig_daemon_path->setText(QFileDialog::getOpenFileName(this, tr("Open File"), "", "Strigi Daemon"));
+}
 

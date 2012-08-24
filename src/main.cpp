@@ -30,6 +30,9 @@
 
 int main(int argc, char *argv[])
 {
+	QCoreApplication::setOrganizationName("Forensics Data Extractor");
+	QCoreApplication::setApplicationName("Qt Console");
+
 	zmq::context_t zmq_context(1);
 	QApplication a(argc, argv);
 
@@ -38,3 +41,4 @@ int main(int argc, char *argv[])
 
 	return a.exec();
 }
+

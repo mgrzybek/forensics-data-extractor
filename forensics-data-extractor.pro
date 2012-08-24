@@ -40,7 +40,8 @@ SOURCES		+= src/main.cpp \
 		src/extractors/firefox_extractor.cpp \
 		src/extractors/web_browser_extractor.cpp \
 		src/extractors/chrome_extractor.cpp \
-		src/sqlite_backend.cpp
+		src/configuration.cpp \
+		src/parsing_engine.cpp
 
 HEADERS		+= src/main_window.h\
 		src/common.h \
@@ -48,6 +49,8 @@ HEADERS		+= src/main_window.h\
 		src/extractors/firefox_extractor.h \
 		src/extractors/web_browser_extractor.h\
 		src/extractors/chrome_extractor.h \
-		src/sqlite_backend.h
+		src/configuration.h \
+		src/parsing_engine.h
 
-FORMS		+= ui/main_window.ui
+FORMS		+= ui/main_window.ui \
+		ui/configuration.ui

@@ -34,24 +34,26 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 {
 	zmq_context = (zmq::context_t*) z_context;
 
-	db = NULL;
+//	db = NULL;
 	chrome_engine = NULL;
 	firefox_engine = NULL;
 	search_engine = NULL;
+	index_engine = NULL;
 	sorted_model_extracted_files = NULL;
 
 	ui->setupUi(this);
 
 	ui->tab_results->setVisible(false);
+	ui->action_Close_Analysis->setDisabled(true);
+
+	scan_in_progress = false;
+	index_in_progress = false;
 	clean_models();
 }
 
 Main_Window::~Main_Window()
 {
 	delete ui;
-
-	if ( db != NULL )
-		delete db;
 
 	if ( chrome_engine != NULL )
 		delete chrome_engine;
@@ -62,23 +64,41 @@ Main_Window::~Main_Window()
 	if ( search_engine != NULL )
 		delete search_engine;
 
+	if ( index_engine != NULL )
+		delete index_engine;
+
 	if ( sorted_model_extracted_files != NULL )
 		delete sorted_model_extracted_files;
 }
 
 void Main_Window::on_browse_button_clicked()
 {
-	ui->directory_line->setText(QFileDialog::getExistingDirectory(this, tr("Find Files"), QDir::currentPath()));
+	QString selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
+	QDir        directory(selected_directory);
+
+	if ( directory.exists(selected_directory) == true )
+		ui->directory_line->setText(selected_directory);
 }
 
 void Main_Window::on_scan_button_clicked()
 {
-	ui->scan_button->setDisabled(true);
-	process_scan();
-	ui->scan_button->setEnabled(true);
+//	if ( scan_in_progress == true ) {
+//		// TODO: send stop signal to the scanner
+//		// TODO: change button's text
+//		// TODO: set the bool to false
+//		emit scan_stop();
+//		ui->scan_button->setText("Scanner");
+//
+//	} else {
+//		ui->scan_button->setText("Stop scanning");
+		process_scan();
+//	}
 }
 
 void Main_Window::update_info() {
+	scan_in_progress = false;
+	ui->scan_button->setText("Scanner");
+
 	ui->cookies_number->setText(QString::number(web_models.cookies.rowCount()));
 	ui->downloads_number->setText(QString::number(web_models.downloads.rowCount()));
 	ui->forms_number->setText(QString::number(web_models.forms.rowCount()));
@@ -96,8 +116,8 @@ void Main_Window::update_info() {
 }
 
 void Main_Window::launch_extractors() {
-//	chrome_engine->start();
-//	firefox_engine->start();
+	chrome_engine->start();
+	firefox_engine->start();
 }
 
 
@@ -106,7 +126,7 @@ void Main_Window::process_scan() {
 		return;
 	}
 
-	search_engine = new Indexing_Engine((void*)zmq_context, db, ui->directory_line->text(), &model_indexed_files);
+	search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), &model_indexed_files);
 
 	chrome_engine = new Chrome_Extractor((void*)zmq_context, &web_models);
 	firefox_engine = new Firefox_Extractor((void*)zmq_context, &web_models);
@@ -115,13 +135,34 @@ void Main_Window::process_scan() {
 	 * Clean the models to prevent duplicates
 	 */
 	clean_models();
-	connect(search_engine, SIGNAL(finished()), this, SLOT(update_info()));
 	connect(search_engine, SIGNAL(ready()), this, SLOT(launch_extractors()));
+	connect(search_engine, SIGNAL(finished()), this, SLOT(update_info()));
+
+	connect(chrome_engine, SIGNAL(finished()), this, SLOT(update_info()));
+	connect(firefox_engine, SIGNAL(finished()), this, SLOT(update_info()));
 
 	/*
 	 * Searching process
 	 */
 	search_engine->start();
+}
+
+
+void Main_Window::process_index() {
+	QStringList folders;
+
+	if ( ui->directory_line->text().isEmpty() == true ) {
+		qCritical() << "no folder to index!";
+		return;
+	}
+
+	folders << ui->directory_line->text();
+	qDebug() << folders;
+
+	index_engine = new Indexing_Engine(strigi_daemon_path, working_directory);
+	index_engine->add_indexed_folders(folders);
+
+	index_engine->start();
 }
 
 void Main_Window::clean_models() {
@@ -193,7 +234,7 @@ void Main_Window::clean_models() {
 	/*
 	 * Extracted files list
 	 */
-	sorted_model_extracted_files = new QSortFilterProxyModel();
+	sorted_model_extracted_files = new QSortFilterProxyModel();// TODO: check delete
 	sorted_model_extracted_files->sort(1, Qt::AscendingOrder);
 	sorted_model_extracted_files->setDynamicSortFilter(true);
 	sorted_model_extracted_files->setSourceModel(&web_models.extracted_files);
@@ -224,13 +265,15 @@ void Main_Window::on_action_New_Analysis_triggered()
 		working_directory = project_directory.path();
 
 		db_file += working_directory + "/index.db";
-		init_db(db_file);
 
 		ui->action_New_Analysis->setDisabled(true);
 		ui->action_Open_Analysis->setDisabled(true);
+		ui->action_Quit->setDisabled(true);
 
 		ui->tab_results->setVisible(true);
 	}
+
+	ui->action_Close_Analysis->setEnabled(true);
 }
 
 void Main_Window::on_action_Quit_triggered()
@@ -241,7 +284,7 @@ void Main_Window::on_action_Quit_triggered()
 
 void Main_Window::on_action_Open_Analysis_triggered()
 {
-	QString buffer_file = QFileDialog::getOpenFileName(this, "Open Analysis", "~/", "");
+	QString buffer_file = QFileDialog::getExistingDirectory(this, "Open Analysis", "~/", QFileDialog::ShowDirsOnly);
 
 	if ( buffer_file.isEmpty() == true )
 		return;
@@ -260,23 +303,75 @@ void Main_Window::on_action_Close_Analysis_triggered()
 	ui->action_Close_Analysis->setDisabled(true);
 	ui->action_New_Analysis->setEnabled(true);
 	ui->action_Open_Analysis->setEnabled(true);
+	ui->action_Quit->setEnabled(true);
 
 	ui->tab_results->setVisible(false);
+
+	// TODO: save the results
+	// TODO: destroy the objects
 }
 
-bool Main_Window::init_db(const QString& db_file) {
-	if ( db_file.isEmpty() == true )
-		return false;
+void Main_Window::load_settings()
+{
+	QSettings	settings;
+	int		size;
+	QList<QStandardItem*>	row;
 
-	db = new Sqlite_Backend(db_file);
+	settings.beginGroup("extractor_manager");
+	size = settings.beginReadArray("indexer");
 
-	if ( db->open_db() == false )
-		return false;
+	row.clear();
 
-	db->exec("CREATE TABLE IF NOT EXIST file ( file_id INTEGER, basename TEXT NOT NULL, complete_suffix TEXT NOT NULL, canonical_path TEXT NOT NULL, size INTEGER NOT NULL, last_modified INTEGER NOT NULL, last_read INTEGER NOT NULL);");
+	for ( int i = 0 ; i < size ; i++ ) {
+		settings.setArrayIndex(i);
 
-//	db.exec("CREATE TABLE mime_type ();");
+		row << new QStandardItem(settings.value("strigi_daemon_path").toString());
+		qDebug() << "domain_name :" << settings.value("domain_name").toString();
 
+		//servers_model.insertRow(i, row);
+		row.clear();
+	}
 
-	return true;
+	settings.endArray();
+	settings.endGroup();
 }
+
+void Main_Window::save_settings()
+{
+	QSettings settings;
+
+	settings.beginGroup("extractor_manager");
+	settings.beginWriteArray("indexer");
+
+/*
+	for ( int row = 0 ; row < servers_model.rowCount() ; row++ ) {
+		settings.setArrayIndex(row);
+
+		settings.setValue("domain_name", servers_model.item(row, 0)->text());
+		qDebug() << "domain_name : " << servers_model.item(row, 0)->text();
+	}
+*/
+
+	settings.endArray();
+	settings.endGroup();
+}
+
+void Main_Window::on_action_Preferences_triggered()
+{
+	conf_dialog = new Configuration();
+
+	if ( conf_dialog->exec() == QDialog::Accepted ) {
+		save_settings();
+	} else {
+		load_settings();
+	}
+	delete conf_dialog;
+}
+
+void Main_Window::on_index_button_clicked()
+{
+	ui->index_button->setDisabled(true);
+	process_index();
+	ui->index_button->setEnabled(true);
+}
+

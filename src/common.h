@@ -51,3 +51,4 @@ typedef struct {
 } web_browser_analysed_files;
 
 #endif // COMMON_H
+

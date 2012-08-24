@@ -67,26 +67,29 @@ void Chrome_Extractor::files_filter(const QString& file_path) {
 void Chrome_Extractor::extract_places(const QString& file) {
 	{
 		SQLITE_OPEN(file)
-
-		QSqlQuery		query(db);
-		QList<QStandardItem*>	row;
+		// TODO: remove last "/" using the regex
+		QSqlQuery	query(db);
 #ifdef WINDOWS_OS
-		QRegExp	url_cleaner("^https{0,1}\:\/\/(.*?)\/.*?$");
+		QRegExp	url_cleaner("^https{0,1}\:\/\/(.+)(\/.*|$)");
+		QRegExp slash_cleaner("\/$");
 #else
-		QRegExp	url_cleaner("^https{0,1}\\:\\/\\/(.*?)\\/.*?$");
+		QRegExp	url_cleaner("^https{0,1}\\:\\/\\/(.+)(\\/.*|\\/|$)");
+		QRegExp slash_cleaner("\\/$");
 #endif
-		query.exec("SELECT visit_count, url FROM urls ORDER BY visit_count, url;");
+		url_cleaner.setMinimal(true);
+
+		query.exec("SELECT visit_count, url FROM urls ORDER BY visit_count DESC, url ASC;");
 
 		while (query.next()) {
-			QString cleaned_url = query.value(1).toString();
-			url_cleaner.indexIn(cleaned_url);
+			QString cleaned_url = "";
 
-			row.clear();
+			if ( url_cleaner.indexIn(query.value(1).toString()) != -1 ) {
+				cleaned_url = url_cleaner.cap(1);
+				cleaned_url.replace(slash_cleaner, "");
 
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(url_cleaner.cap(1));
-
-			models->places.appendRow(row);
+				update_url_map(cleaned_url, query.value(0).toUInt());
+			} else
+				qDebug() << "Regex failed on " << query.value(1).toString();
 		}
 		query.clear();
 	}
@@ -169,7 +172,7 @@ void Chrome_Extractor::extract_search(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery	query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT k.term, u.url FROM keyword_search_terms k, urls u WHERE k.url_id = u.id ORDER BY k.term;");
@@ -191,7 +194,7 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery	query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT action_url, username_value, password_value FROM logins ORDER BY action_url;");
@@ -209,3 +212,4 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 	}
 	SQLITE_CLOSE(file)
 }
+

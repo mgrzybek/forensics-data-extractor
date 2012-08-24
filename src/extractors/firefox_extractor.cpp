@@ -35,37 +35,10 @@ Firefox_Extractor::Firefox_Extractor(
 			models
 			)
 {
-	sorting_db = QSqlDatabase::addDatabase("QSQLITE");
-	sorting_db.setDatabaseName(":memory:");
-
-	QSqlQuery	query(sorting_db);
-
-	if ( query.exec("CREATE TABLE host (hits INTEGER NOT NULL, site LONGVARCHAR NOT NULL);") == false )
-		qCritical() << "Cannot create host table into memory: " << sorting_db.lastError().NoError;
-
-	query.clear();
+	url_map.clear();
 }
 
 Firefox_Extractor::~Firefox_Extractor() {
-	QSqlQuery		query(sorting_db);
-	QList<QStandardItem*>	row;
-
-	query.exec("SELECT SUM(hits), site FROM host GROUP BY site;");
-
-	while (query.next()) {
-		row.clear();
-
-		row << new QStandardItem(query.value(0).toString());
-		row << new QStandardItem(query.value(1).toString());
-
-		models->places.appendRow(row);
-	}
-	query.clear();
-	row.clear();
-
-	query.exec("DROP TABLE host;");
-	query.clear();
-	sorting_db.close();
 }
 
 void Firefox_Extractor::files_filter(const QString& file_path) {
@@ -103,28 +76,20 @@ void Firefox_Extractor::extract_places(const QString& file) {
 		SQLITE_OPEN(file)
 
 		QSqlQuery	query(db);
-		QSqlQuery	in_mem_query(sorting_db);
 
 		query.exec("SELECT COUNT(*), rev_host FROM moz_places GROUP BY rev_host ORDER BY COUNT(*);");
-		in_mem_query.prepare("INSERT INTO host (hits, site) VALUES (:hits, :site);");
 
 		while (query.next()) {
-			QString reversed_host;
+			QString reversed_host = "";
 
 			Q_FOREACH(QChar c, query.value(1).toString()) {
 				reversed_host.insert(0, c);
 			}
 			reversed_host.remove(0, 1);
 
-			if ( query.value(0).toString().isEmpty() == false and query.value(1).toString().isEmpty() == false ) {
-
-				in_mem_query.bindValue(":hits", query.value(0).toString());
-				in_mem_query.bindValue(":site", query.value(1).toString());
-				in_mem_query.exec();
-			}
+			update_url_map(reversed_host, query.value(0).toUInt());
 		}
 		query.clear();
-		in_mem_query.clear();
 	}
 	SQLITE_CLOSE(file)
 }
@@ -160,7 +125,7 @@ void Firefox_Extractor::extract_downloads(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery   query(db);
+		QSqlQuery		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT name, source, mimeType FROM moz_downloads ORDER BY startTime;");
@@ -230,7 +195,7 @@ void Firefox_Extractor::extract_signons(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery   query(db);
+		QSqlQuery 		query(db);
 		QList<QStandardItem*>	row;
 
 		query.exec("SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins ORDER BY hostname;");
@@ -248,3 +213,4 @@ void Firefox_Extractor::extract_signons(const QString& file) {
 	}
 	SQLITE_CLOSE(file)
 }
+

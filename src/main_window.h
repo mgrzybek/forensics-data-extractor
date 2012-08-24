@@ -37,10 +37,12 @@
 #include <QSortFilterProxyModel>
 
 #include "common.h"
+#include "configuration.h"
 #include "extractors/firefox_extractor.h"
 #include "extractors/chrome_extractor.h"
 #include "indexing_engine.h"
-#include "sqlite_backend.h"
+#include "parsing_engine.h"
+#include "configuration.h"
 
 namespace Ui {
 	class Main_Window;
@@ -54,7 +56,8 @@ class Main_Window : public QMainWindow
 		explicit	Main_Window(void* z_context, QWidget *parent = 0);
 		~Main_Window();
 
-		zmq::context_t*		zmq_context;
+		zmq::context_t*	zmq_context;
+
 	private slots:
 		void	on_browse_button_clicked();
 		void	on_scan_button_clicked();
@@ -62,19 +65,20 @@ class Main_Window : public QMainWindow
 		void	update_info();
 		void	launch_extractors();
 
-		void on_action_New_Analysis_triggered();
+		void	on_action_New_Analysis_triggered();
+		void	on_action_Quit_triggered();
+		void	on_action_Open_Analysis_triggered();
+		void	on_action_Close_Analysis_triggered();
+		void	on_action_Preferences_triggered();
 
-		void on_action_Quit_triggered();
+		void on_index_button_clicked();
 
-		void on_action_Open_Analysis_triggered();
-
-		void on_action_Close_Analysis_triggered();
-
-private:
+	private:
 		/*
 		 * GUI Stuff
 		 */
-		Ui::Main_Window	*ui;
+		Ui::Main_Window*	ui;
+		Configuration*	 	conf_dialog;
 
 		/*
 		 * Models
@@ -90,19 +94,28 @@ private:
 		 * Working files
 		 */
 		QString		working_directory;
-		Sqlite_Backend*	db;
+		QString		strigi_daemon_path;
 
 		/*
 		 * Processing classes
 		 */
-		Indexing_Engine*	search_engine;
+		Parsing_Engine*		search_engine;
 		Firefox_Extractor*	firefox_engine;
 		Chrome_Extractor*	chrome_engine;
 
+		Indexing_Engine*	index_engine;
+
+		bool	scan_in_progress;
+		bool	index_in_progress;
+
 		void	process_scan();
+		void	process_index();
 		void	clean_models();
 
 		bool	init_db(const QString& db_file);
+		void	load_settings();
+		void	save_settings();
 };
 
 #endif // MAIN_WINDOW_H
+

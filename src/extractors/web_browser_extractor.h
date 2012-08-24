@@ -30,6 +30,7 @@
 
 #include <QStandardItemModel>
 #include <QFileSystemModel>
+#include <QRegExp>
 #include <QRunnable>
 #include <QThread>
 #include <QDebug>
@@ -43,7 +44,7 @@
 	QSqlDatabase db; \
 	db = QSqlDatabase::addDatabase("QSQLITE",db_file); \
 	db.setDatabaseName(db_file); \
-	\
+\
 	if (!db.open()) { \
 		qCritical() << "Cannot connect to the database " << db_file; \
 		return; \
@@ -57,7 +58,7 @@ class Web_Browser_Extractor : public QThread
 	public:
 		Web_Browser_Extractor(void* z_context, web_browser_models* web_models);
 
-		~Web_Browser_Extractor();
+		~Web_Browser_Extractor() = 0;
 
 		void	run();
 
@@ -73,12 +74,17 @@ class Web_Browser_Extractor : public QThread
 	protected:
 		zmq::context_t*		zmq_context;
 		QString			dir_path;
+		QMap<QString, uint>	url_map;
 
 		web_browser_models*		models;
 		web_browser_analysed_files	files;
 
 		void	append_extracted_files_to_model_files();
 		void	append_files_to_model_files(const QStringList& f);
+
+		void	update_url_map(const QString& url, const uint& count);
+		void	update_model_places();
 };
 
 #endif // WEB_BROWSER_EXTRACTOR_H
+
