@@ -32,8 +32,11 @@ bool	Database::exec(const QString& query) {
 		return false;
 	}
 
-	if ( atomic_exec(query) == false )
+	if ( atomic_exec(query) == false ) {
 		qCritical() << "Failure: " << query;
+		mutex.unlock();
+		return false;
+	}
 
 	if ( db.commit() == false ) {
 		qCritical() << "Commit failed: " << db.lastError().text();
@@ -46,7 +49,7 @@ bool	Database::exec(const QString& query) {
 }
 
 bool	Database::exec(const QStringList& queries) {
-		mutex.lock();
+	mutex.lock();
 
 	if ( db.transaction() == false ) {
 		qCritical() << "Transaction begin failed: " << db.lastError().text();
@@ -114,3 +117,4 @@ bool	Database::atomic_exec(const QString& query) {
 
 	return true;
 }
+

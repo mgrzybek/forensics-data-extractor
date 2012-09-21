@@ -27,8 +27,7 @@
 
 #include "parsing_engine.h"
 
-Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread()
-{
+Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread() {
 	zmq_context = (zmq::context_t*) z_context;
 
 	if ( r_path.isEmpty() == true )
@@ -71,7 +70,8 @@ void Parsing_Engine::run() {
 			socket.bind("inproc://forensics-parser.inproc");
 #endif
 			emit ready();
-			wait(1);
+			// Pause to let the extractors start and connect
+			wait(1); // TODO: is it really useful ?
 
 			recursive_search(socket, root_path);
 

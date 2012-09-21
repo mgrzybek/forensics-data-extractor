@@ -49,8 +49,7 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 	index_in_progress = false;
 }
 
-Main_Window::~Main_Window()
-{
+Main_Window::~Main_Window() {
 	/*
 	 * The threads should be stopped before deleting to avoid segfault
 	 */
@@ -93,8 +92,7 @@ Main_Window::~Main_Window()
 //		delete db;
 }
 
-void Main_Window::on_browse_button_clicked()
-{
+void Main_Window::on_browse_button_clicked() {
 	QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
 	QDir	directory(selected_directory);
 
@@ -102,8 +100,7 @@ void Main_Window::on_browse_button_clicked()
 		ui->directory_line->setText(selected_directory);
 }
 
-void Main_Window::on_scan_button_clicked()
-{
+void Main_Window::on_scan_button_clicked() {
 	//	if ( scan_in_progress == true ) {
 	//		// TODO: send stop signal to the scanner
 	//		// TODO: change button's text
@@ -121,6 +118,10 @@ void Main_Window::update_info() {
 	scan_in_progress = false;
 	ui->scan_button->setText("Scanner");
 
+	/*
+	 * We do not use model->rowCount() because the select() method does not read everything at the first time.
+	 * We use a custom method using a count(*) sql query against the tables.
+	 */
 	if ( web_models.cookies != NULL ) {
 		web_models.cookies->select();
 		ui->cookies_number->setText(QString::number(db->get_row_count("cookie")));
@@ -166,7 +167,6 @@ void Main_Window::update_info() {
 		model_analysed_files->select();
 		ui->extracted_list->resizeColumnsToContents();
 	}
-
 }
 
 void Main_Window::launch_extractors() {
@@ -220,7 +220,7 @@ void Main_Window::process_index() {
 }
 
 void Main_Window::init_models(QSqlDatabase& db) {
-	model_indexed_files	= new QSqlTableModel(0, db);
+	model_indexed_files = new QSqlTableModel(0, db);
 	model_indexed_files->setTable("parsed_file");
 	model_indexed_files->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	model_indexed_files->setSort(1, Qt::DescendingOrder);
@@ -301,59 +301,17 @@ void Main_Window::init_models(QSqlDatabase& db) {
 }
 
 void Main_Window::clean_models() {
-	QStringList headers;
-
-	/*
-	 * Places
-	 */
 	ui->places_view->setModel(web_models.places);
-	headers.clear();
-
-	/*
-	 * Cookies
-	 */
 	ui->cookies_view->setModel(web_models.cookies);
-	headers.clear();
-
-	/*
-	 * Downloads
-	 */
 	ui->downloads_view->setModel(web_models.downloads);
-	headers.clear();
-
-	/*
-	 * Forms
-	 */
 	ui->forms_view->setModel(web_models.forms);
-	headers.clear();
-
-	/*
-	 * Searches
-	 */
 	ui->search_view->setModel(web_models.searches);
-	headers.clear();
-
-	/*
-	 * Signons
-	 */
 	ui->signons_view->setModel(web_models.signons);
-	headers.clear();
-
-	/*
-	 * Indexed files list
-	 */
 	ui->indexed_list->setModel(model_indexed_files);
-	headers.clear();
-
-	/*
-	 * Extracted files list
-	 */
 	ui->extracted_list->setModel(model_analysed_files);
-	headers.clear();
 }
 
-void Main_Window::on_action_New_Analysis_triggered()
-{
+void Main_Window::on_action_New_Analysis_triggered() {
 	QString dir = QFileDialog::getSaveFileName(this, "New Analysis", "~/", "");
 
 	if ( dir.isEmpty() == true )
@@ -386,14 +344,12 @@ void Main_Window::on_action_New_Analysis_triggered()
 	init_models(*db->get_db());
 }
 
-void Main_Window::on_action_Quit_triggered()
-{
+void Main_Window::on_action_Quit_triggered() {
 	setAttribute(Qt::WA_DeleteOnClose);
 	close();
 }
 
-void Main_Window::on_action_Open_Analysis_triggered()
-{
+void Main_Window::on_action_Open_Analysis_triggered() {
 	QString buffer_file = QFileDialog::getExistingDirectory(this, "Open Analysis", "~/", QFileDialog::ShowDirsOnly);
 	QString	db_file;
 
@@ -416,8 +372,7 @@ void Main_Window::on_action_Open_Analysis_triggered()
 	init_models(*db->get_db());
 }
 
-void Main_Window::on_action_Close_Analysis_triggered()
-{
+void Main_Window::on_action_Close_Analysis_triggered() {
 	ui->action_Close_Analysis->setDisabled(true);
 	ui->action_New_Analysis->setEnabled(true);
 	ui->action_Open_Analysis->setEnabled(true);
@@ -445,8 +400,7 @@ bool Main_Window::save_analysis_db(QSqlQuery& query) {
 	return true;
 }
 
-void Main_Window::load_settings()
-{
+void Main_Window::load_settings() {
 	QSettings	settings;
 	int		size;
 	QList<QStandardItem*>	row;
@@ -470,8 +424,7 @@ void Main_Window::load_settings()
 	settings.endGroup();
 }
 
-void Main_Window::save_settings()
-{
+void Main_Window::save_settings() {
 	QSettings settings;
 
 	settings.beginGroup("extractor_manager");
@@ -490,8 +443,7 @@ void Main_Window::save_settings()
 	settings.endGroup();
 }
 
-void Main_Window::on_action_Preferences_triggered()
-{
+void Main_Window::on_action_Preferences_triggered() {
 	conf_dialog = new Configuration();
 
 	if ( conf_dialog->exec() == QDialog::Accepted ) {
@@ -499,19 +451,18 @@ void Main_Window::on_action_Preferences_triggered()
 	} else {
 		load_settings();
 	}
+
 	delete conf_dialog;
 }
 
-void Main_Window::on_index_button_clicked()
-{
+void Main_Window::on_index_button_clicked() {
 	ui->index_button->setDisabled(true);
 	process_index();
 	ui->index_button->setEnabled(true);
 }
 
 
-void Main_Window::on_action_Save_Analysis_triggered()
-{
+void Main_Window::on_action_Save_Analysis_triggered() {
 	/*
 	QString db_analysis = working_directory + "/analysis.db";
 	qDebug() << db_analysis;
@@ -527,3 +478,4 @@ void Main_Window::on_action_Save_Analysis_triggered()
 	SQLITE_CLOSE(db_analysis);
 	*/
 }
+
