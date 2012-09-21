@@ -1,7 +1,7 @@
 /**
  * Project: forensics-data-extractor
- * File name: configuration.cpp
- * Description: describes the configuration dialog
+ * File name: indexing_engine.h
+ * Description: describes the indexing engine that lists and processes the files
  *
  * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
@@ -25,23 +25,39 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "configuration.h"
-#include "ui_configuration.h"
+#ifndef INDEXING_ENGINE_H
+#define INDEXING_ENGINE_H
 
-Configuration::Configuration(QWidget *parent) :
-	QDialog(parent),
-	ui(new Ui::Configuration)
-{
-	ui->setupUi(this);
-}
+//#include <magic.h>
+#include <zmq.hpp>
 
-Configuration::~Configuration()
-{
-	delete ui;
-}
+#include <QStandardItemModel>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QTextEdit>
+#include <QDateTime>
+#include <QProcess>
+#include <QThread>
+#include <QString>
+#include <QDebug>
+#include <QFile>
+#include <QDir>
 
-void Configuration::on_tool_string_daemon_path_clicked()
+// TODO: do we really need a QThread object here?
+class Indexing_Engine : public QThread
 {
-	ui->line_strig_daemon_path->setText(QFileDialog::getOpenFileName(this, tr("Open File"), "", "Strigi Daemon"));
-}
+	public:
+		Indexing_Engine(const QString& e_path, const QString& w_directory);
+		void   run();
+
+		void    add_indexed_folders(const QStringList& folders);
+
+	private:
+		QString engine_path;
+		QString working_directory;
+		QStringList     indexed_folders;
+		bool    create_conf_file();
+};
+
+#endif // SEARCH_ENGINE_H
 

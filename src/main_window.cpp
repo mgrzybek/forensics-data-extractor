@@ -34,12 +34,11 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 {
 	zmq_context = (zmq::context_t*) z_context;
 
-//	db = NULL;
+	db = NULL;
 	chrome_engine = NULL;
 	firefox_engine = NULL;
 	search_engine = NULL;
 	index_engine = NULL;
-	sorted_model_extracted_files = NULL;
 
 	ui->setupUi(this);
 
@@ -48,33 +47,56 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 
 	scan_in_progress = false;
 	index_in_progress = false;
-	clean_models();
 }
 
 Main_Window::~Main_Window()
 {
+	/*
+	 * The threads should be stopped before deleting to avoid segfault
+	 */
+	// TODO: print a message to tell that the software is waiting for the threads to end
+	if ( chrome_engine != NULL ) {
+		chrome_engine->wait();
+		delete chrome_engine;
+	}
+
+	if ( firefox_engine != NULL ) {
+		firefox_engine->wait();
+		delete firefox_engine;
+	}
+
+	if ( search_engine != NULL ) {
+		search_engine->wait();
+		delete search_engine;
+	}
+
+	if ( index_engine != NULL ) {
+		index_engine->wait();
+		delete index_engine;
+	}
+
+	/*
+	 * We should delete the tableview after the models
+	 */
 	delete ui;
 
-	if ( chrome_engine != NULL )
-		delete chrome_engine;
+	if ( web_models.places != NULL )
+		delete web_models.places;
 
-	if ( firefox_engine != NULL )
-		delete firefox_engine;
+	if ( model_indexed_files != NULL )
+		delete model_indexed_files;
 
-	if ( search_engine != NULL )
-		delete search_engine;
+	if ( model_analysed_files != NULL )
+		delete model_analysed_files;
 
-	if ( index_engine != NULL )
-		delete index_engine;
-
-	if ( sorted_model_extracted_files != NULL )
-		delete sorted_model_extracted_files;
+//	if ( db != NULL )
+//		delete db;
 }
 
 void Main_Window::on_browse_button_clicked()
 {
-	QString selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
-	QDir        directory(selected_directory);
+	QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
+	QDir	directory(selected_directory);
 
 	if ( directory.exists(selected_directory) == true )
 		ui->directory_line->setText(selected_directory);
@@ -82,37 +104,69 @@ void Main_Window::on_browse_button_clicked()
 
 void Main_Window::on_scan_button_clicked()
 {
-//	if ( scan_in_progress == true ) {
-//		// TODO: send stop signal to the scanner
-//		// TODO: change button's text
-//		// TODO: set the bool to false
-//		emit scan_stop();
-//		ui->scan_button->setText("Scanner");
-//
-//	} else {
-//		ui->scan_button->setText("Stop scanning");
-		process_scan();
-//	}
+	//	if ( scan_in_progress == true ) {
+	//		// TODO: send stop signal to the scanner
+	//		// TODO: change button's text
+	//		// TODO: set the bool to false
+	//		emit scan_stop();
+	//		ui->scan_button->setText("Scanner");
+	//
+	//	} else {
+	//		ui->scan_button->setText("Stop scanning");
+	process_scan();
+	//	}
 }
 
 void Main_Window::update_info() {
 	scan_in_progress = false;
 	ui->scan_button->setText("Scanner");
 
-	ui->cookies_number->setText(QString::number(web_models.cookies.rowCount()));
-	ui->downloads_number->setText(QString::number(web_models.downloads.rowCount()));
-	ui->forms_number->setText(QString::number(web_models.forms.rowCount()));
-	ui->places_number->setText(QString::number(web_models.places.rowCount()));
-	ui->search_number->setText(QString::number(web_models.searches.rowCount()));
-	ui->signons_number->setText(QString::number(web_models.signons.rowCount()));
-	ui->indexed_files_number->setText(QString::number(model_indexed_files.rowCount()));
+	if ( web_models.cookies != NULL ) {
+		web_models.cookies->select();
+		ui->cookies_number->setText(QString::number(db->get_row_count("cookie")));
+		ui->cookies_view->resizeColumnsToContents();
+	}
 
-	ui->cookies_view->resizeColumnsToContents();
-	ui->downloads_view->resizeColumnsToContents();
-	ui->forms_view->resizeColumnsToContents();
-	ui->places_view->resizeColumnsToContents();
-	ui->search_view->resizeColumnsToContents();
-	ui->signons_view->resizeColumnsToContents();
+	if ( web_models.downloads != NULL ) {
+		web_models.downloads->select();
+		ui->downloads_number->setText(QString::number(db->get_row_count("download")));
+		ui->downloads_view->resizeColumnsToContents();
+	}
+
+	if ( web_models.forms != NULL ) {
+		web_models.forms->select();
+		ui->forms_number->setText(QString::number(db->get_row_count("form")));
+		ui->forms_view->resizeColumnsToContents();
+	}
+
+	if ( web_models.places != NULL ) {
+		web_models.places->select();
+		ui->places_number->setText(QString::number(db->get_row_count("place")));
+		ui->places_view->resizeColumnsToContents();
+	}
+
+	if ( web_models.searches != NULL ) {
+		web_models.searches->select();
+		ui->search_number->setText(QString::number(db->get_row_count("search")));
+		ui->search_view->resizeColumnsToContents();
+	}
+
+	if ( web_models.signons != NULL ) {
+		web_models.signons->select();
+		ui->signons_number->setText(QString::number(db->get_row_count("signon")));
+		ui->signons_view->resizeColumnsToContents();
+	}
+
+	if ( model_indexed_files != NULL ) {
+		model_indexed_files->select();
+		ui->indexed_files_number->setText(QString::number(db->get_row_count("parsed_file")));
+	}
+
+	if ( model_analysed_files != NULL ) {
+		model_analysed_files->select();
+		ui->extracted_list->resizeColumnsToContents();
+	}
+
 }
 
 void Main_Window::launch_extractors() {
@@ -126,10 +180,10 @@ void Main_Window::process_scan() {
 		return;
 	}
 
-	search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), &model_indexed_files);
+	search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db);
 
-	chrome_engine = new Chrome_Extractor((void*)zmq_context, &web_models);
-	firefox_engine = new Firefox_Extractor((void*)zmq_context, &web_models);
+	chrome_engine = new Chrome_Extractor((void*)zmq_context, db);
+	firefox_engine = new Firefox_Extractor((void*)zmq_context, db);
 
 	/*
 	 * Clean the models to prevent duplicates
@@ -152,7 +206,7 @@ void Main_Window::process_index() {
 	QStringList folders;
 
 	if ( ui->directory_line->text().isEmpty() == true ) {
-		qCritical() << "no folder to index!";
+		qCritical() << "No folder to index!";
 		return;
 	}
 
@@ -165,84 +219,136 @@ void Main_Window::process_index() {
 	index_engine->start();
 }
 
+void Main_Window::init_models(QSqlDatabase& db) {
+	model_indexed_files	= new QSqlTableModel(0, db);
+	model_indexed_files->setTable("parsed_file");
+	model_indexed_files->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	model_indexed_files->setSort(1, Qt::DescendingOrder);
+	model_indexed_files->select();
+	model_indexed_files->setHeaderData(0, Qt::Horizontal, tr("File"));
+
+	model_analysed_files = new QSqlTableModel(0, db);
+	model_analysed_files->setTable("analysed_file");
+	model_analysed_files->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	model_analysed_files->setSort(1, Qt::DescendingOrder);
+	model_analysed_files->select();
+	model_analysed_files->setHeaderData(0, Qt::Horizontal, tr("File"));
+
+	web_models.places = new QSqlTableModel(0, db);
+	web_models.places->setTable("place");
+	web_models.places->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.places->setSort(1, Qt::DescendingOrder);
+	web_models.places->select();
+	web_models.places->setHeaderData(0, Qt::Horizontal, tr("Site"));
+	web_models.places->setHeaderData(1, Qt::Horizontal, tr("Hits"));
+
+	web_models.cookies = new QSqlTableModel(0, db);
+	web_models.cookies->setTable("cookie");
+	web_models.cookies->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.cookies->setSort(1, Qt::DescendingOrder);
+	web_models.cookies->select();
+	web_models.cookies->setHeaderData(0, Qt::Horizontal, tr("Name"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Value"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Hosts"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Path"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Expiration"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Secured"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("HTTP"));
+	web_models.cookies->setHeaderData(1, Qt::Horizontal, tr("Last_Accessed"));
+
+	web_models.downloads = new QSqlTableModel(0, db);
+	web_models.downloads->setTable("download");
+	web_models.downloads->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.downloads->setSort(1, Qt::DescendingOrder);
+	web_models.downloads->select();
+	web_models.downloads->setHeaderData(0, Qt::Horizontal, tr("Name"));
+	web_models.downloads->setHeaderData(1, Qt::Horizontal, tr("Source"));
+	web_models.downloads->setHeaderData(1, Qt::Horizontal, tr("Mime"));
+
+	web_models.forms = new QSqlTableModel(0, db);
+	web_models.forms->setTable("form");
+	web_models.forms->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.forms->setSort(1, Qt::DescendingOrder);
+	web_models.forms->select();
+	web_models.forms->setHeaderData(0, Qt::Horizontal, tr("Host"));
+	web_models.forms->setHeaderData(0, Qt::Horizontal, tr("ID"));
+	web_models.forms->setHeaderData(0, Qt::Horizontal, tr("Password"));
+
+	web_models.searches = new QSqlTableModel(0, db);
+	web_models.searches->setTable("search");
+	web_models.searches->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.searches->setSort(1, Qt::DescendingOrder);
+	web_models.searches->select();
+	web_models.searches->setHeaderData(0, Qt::Horizontal, tr("Name"));
+	web_models.searches->setHeaderData(0, Qt::Horizontal, tr("Value"));
+	web_models.searches->setHeaderData(0, Qt::Horizontal, tr("Hits"));
+
+	web_models.signons = new QSqlTableModel(0, db);
+	web_models.signons->setTable("signon");
+	web_models.signons->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.signons->setSort(1, Qt::DescendingOrder);
+	web_models.signons->select();
+	web_models.signons->setHeaderData(0, Qt::Horizontal, tr("Host"));
+	web_models.signons->setHeaderData(0, Qt::Horizontal, tr("ID"));
+	web_models.signons->setHeaderData(0, Qt::Horizontal, tr("Password"));
+
+	web_models.extracted_files = new QSqlTableModel(0, db);
+	web_models.extracted_files->setTable("analysed_file");
+	web_models.extracted_files->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	web_models.extracted_files->setSort(1, Qt::DescendingOrder);
+	web_models.extracted_files->select();
+	web_models.extracted_files->setHeaderData(0, Qt::Horizontal, tr("Fichiers"));
+}
+
 void Main_Window::clean_models() {
 	QStringList headers;
 
 	/*
 	 * Places
 	 */
-	headers << "Visites" << "Site";
-	web_models.places.clear();
-	web_models.places.setHorizontalHeaderLabels(headers);
-	ui->places_view->setModel(&web_models.places);
+	ui->places_view->setModel(web_models.places);
 	headers.clear();
 
 	/*
 	 * Cookies
 	 */
-	headers << "Nom" <<  "Valeur" <<  "Hôte" << "Chemin" <<  "Expiration" << "Scuris" << "HTTP" << "lastAccessed" << "Dernier accès";
-	web_models.cookies.clear();
-	web_models.cookies.setHorizontalHeaderLabels(headers);
-	ui->cookies_view->setModel(&web_models.cookies);
+	ui->cookies_view->setModel(web_models.cookies);
 	headers.clear();
 
 	/*
 	 * Downloads
 	 */
-	headers << "Name" << "Sources" << "Type MIME";
-	web_models.downloads.clear();
-	web_models.downloads.setHorizontalHeaderLabels(headers);
-	ui->downloads_view->setModel(&web_models.downloads);
+	ui->downloads_view->setModel(web_models.downloads);
 	headers.clear();
 
 	/*
 	 * Forms
 	 */
-	headers << "Hte" << "Identifiant" << "Mot de passe";
-	web_models.forms.clear();
-	web_models.forms.setHorizontalHeaderLabels(headers);
-	ui->forms_view->setModel(&web_models.forms);
+	ui->forms_view->setModel(web_models.forms);
 	headers.clear();
 
 	/*
 	 * Searches
 	 */
-	headers << "Noms" << "Valeurs";
-	web_models.searches.clear();
-	web_models.searches.setHorizontalHeaderLabels(headers);
-	ui->search_view->setModel(&web_models.searches);
+	ui->search_view->setModel(web_models.searches);
 	headers.clear();
 
 	/*
 	 * Signons
 	 */
-	headers << "Hôte" << "Identifiant" << "Mot de passe";
-	web_models.signons.clear();
-	web_models.signons.setHorizontalHeaderLabels(headers);
-	ui->signons_view->setModel(&web_models.signons);
+	ui->signons_view->setModel(web_models.signons);
 	headers.clear();
 
 	/*
 	 * Indexed files list
 	 */
-	headers << "Fichiers";
-	model_indexed_files.clear();
-	model_indexed_files.setHorizontalHeaderLabels(headers);
-	ui->indexed_list->setModel(&model_indexed_files);
+	ui->indexed_list->setModel(model_indexed_files);
 	headers.clear();
 
 	/*
 	 * Extracted files list
 	 */
-	sorted_model_extracted_files = new QSortFilterProxyModel();// TODO: check delete
-	sorted_model_extracted_files->sort(1, Qt::AscendingOrder);
-	sorted_model_extracted_files->setDynamicSortFilter(true);
-	sorted_model_extracted_files->setSourceModel(&web_models.extracted_files);
-
-	headers << "Fichiers";
-	web_models.extracted_files.clear();
-	web_models.extracted_files.setHorizontalHeaderLabels(headers);
-	ui->extracted_list->setModel(sorted_model_extracted_files);
+	ui->extracted_list->setModel(model_analysed_files);
 	headers.clear();
 }
 
@@ -261,19 +367,23 @@ void Main_Window::on_action_New_Analysis_triggered()
 		QMessageBox::critical(this, tr("Creation failed"), tr("The project cannot be created"));
 	} else {
 		QString db_file;
-
 		working_directory = project_directory.path();
+		db_file += working_directory + "/analysis.db";
 
-		db_file += working_directory + "/index.db";
+		db = new Database(db_file);
 
 		ui->action_New_Analysis->setDisabled(true);
 		ui->action_Open_Analysis->setDisabled(true);
 		ui->action_Quit->setDisabled(true);
 
 		ui->tab_results->setVisible(true);
+
+		create_analysis_db(db_file);
 	}
 
 	ui->action_Close_Analysis->setEnabled(true);
+
+	init_models(*db->get_db());
 }
 
 void Main_Window::on_action_Quit_triggered()
@@ -285,17 +395,25 @@ void Main_Window::on_action_Quit_triggered()
 void Main_Window::on_action_Open_Analysis_triggered()
 {
 	QString buffer_file = QFileDialog::getExistingDirectory(this, "Open Analysis", "~/", QFileDialog::ShowDirsOnly);
+	QString	db_file;
 
 	if ( buffer_file.isEmpty() == true )
 		return;
 
 	QFileInfo	project_file(buffer_file);
-	working_directory = project_file.absoluteDir().dirName();
+	working_directory = project_file.absoluteDir().absolutePath();
+	db_file += working_directory + "/analysis.db";
+
+	db = new Database(db_file);
+
+	qDebug() << working_directory;
 
 	ui->action_New_Analysis->setDisabled(true);
 	ui->action_Open_Analysis->setDisabled(true);
 
 	ui->tab_results->setVisible(true);
+
+	init_models(*db->get_db());
 }
 
 void Main_Window::on_action_Close_Analysis_triggered()
@@ -307,8 +425,24 @@ void Main_Window::on_action_Close_Analysis_triggered()
 
 	ui->tab_results->setVisible(false);
 
-	// TODO: save the results
+	// TODO: save the results : analyse's parameters
 	// TODO: destroy the objects
+	if ( db != NULL ) {
+		delete db;
+		db = NULL;
+	}
+}
+
+bool Main_Window::create_analysis_db(const QString& db_file) {
+	return true;
+}
+
+bool Main_Window::open_analysis_db(const QString& db_file) {
+	return true;
+}
+
+bool Main_Window::save_analysis_db(QSqlQuery& query) {
+	return true;
 }
 
 void Main_Window::load_settings()
@@ -343,14 +477,14 @@ void Main_Window::save_settings()
 	settings.beginGroup("extractor_manager");
 	settings.beginWriteArray("indexer");
 
-/*
-	for ( int row = 0 ; row < servers_model.rowCount() ; row++ ) {
-		settings.setArrayIndex(row);
+	/*
+	   for ( int row = 0 ; row < servers_model.rowCount() ; row++ ) {
+	   settings.setArrayIndex(row);
 
-		settings.setValue("domain_name", servers_model.item(row, 0)->text());
-		qDebug() << "domain_name : " << servers_model.item(row, 0)->text();
-	}
-*/
+	   settings.setValue("domain_name", servers_model.item(row, 0)->text());
+	   qDebug() << "domain_name : " << servers_model.item(row, 0)->text();
+	   }
+	 */
 
 	settings.endArray();
 	settings.endGroup();
@@ -375,3 +509,21 @@ void Main_Window::on_index_button_clicked()
 	ui->index_button->setEnabled(true);
 }
 
+
+void Main_Window::on_action_Save_Analysis_triggered()
+{
+	/*
+	QString db_analysis = working_directory + "/analysis.db";
+	qDebug() << db_analysis;
+	{
+		SQLITE_OPEN(db_analysis);
+
+		QSqlQuery query(db);
+
+		init_analysis_db(query);
+		query.clear();
+	}
+
+	SQLITE_CLOSE(db_analysis);
+	*/
+}

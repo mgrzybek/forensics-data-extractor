@@ -25,7 +25,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "firefox_extractor.h"
+#include "extractors/firefox_extractor.h"
 
 Firefox_Extractor::Firefox_Extractor(
 		void*			z_context,
@@ -33,6 +33,17 @@ Firefox_Extractor::Firefox_Extractor(
 		) : Web_Browser_Extractor(
 			z_context,
 			models
+			)
+{
+	url_map.clear();
+}
+
+Firefox_Extractor::Firefox_Extractor(
+		void*		z_context,
+		Database*	db
+		) : Web_Browser_Extractor(
+			z_context,
+			db
 			)
 {
 	url_map.clear();
@@ -46,19 +57,23 @@ void Firefox_Extractor::files_filter(const QString& file_path) {
 	QString file = file_path_parts.at(file_path_parts.size() - 1);
 
 	if ( file.compare("cookies.sqlite") == 0 ) {
-		files.cookies << file_path;
+		//files.cookies << file_path;
+		files << file_path;
 		extract_cookies(file_path);
 	}
 	if ( file.compare("downloads.sqlite") == 0 ) {
-		files.downloads << file_path;
+		//files.downloads << file_path;
+		files << file_path;
 		extract_downloads(file_path);
 	}
 	if ( file.compare("forms.sqlite") == 0 ) {
-		files.forms << file_path;
+		//files.forms << file_path;
+		files << file_path;
 		extract_forms(file_path);
 	}
 	if ( file.compare("places.sqlite") == 0 ) {
-		files.places << file_path;
+		//files.places << file_path;
+		files << file_path;
 		extract_places(file_path);
 	}
 //	if ( file.compare("search.sqlite") == 0 ) {
@@ -66,7 +81,8 @@ void Firefox_Extractor::files_filter(const QString& file_path) {
 //		extract_search(file_path);
 //	}
 	if ( file.compare("signons.sqlite") == 0 ) {
-		files.signons << file_path;
+		//files.signons << file_path;
+		files << file_path;
 		extract_signons(file_path);
 	}
 }
@@ -87,7 +103,7 @@ void Firefox_Extractor::extract_places(const QString& file) {
 			}
 			reversed_host.remove(0, 1);
 
-			update_url_map(reversed_host, query.value(0).toUInt());
+			update_map(url_map, reversed_host, query.value(0).toUInt());
 		}
 		query.clear();
 	}
@@ -98,25 +114,28 @@ void Firefox_Extractor::extract_cookies(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery		query(db);
-		QList<QStandardItem*>	row;
+		QSqlQuery	query(db);
+		QString		insert_query;
 
 		query.exec("SELECT name, value, host, path, expiry, isSecure, isHttpOnly, lastAccessed FROM moz_cookies ORDER BY lastAccessed;");
 
 		while (query.next()) {
-			row.clear();
+			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
+			insert_query += "'" % query.value(0).toString() % "',";
+			insert_query += "'" % query.value(1).toString() % "',";
+			insert_query += "'" % query.value(2).toString() % "',";
+			insert_query += "'" % query.value(3).toString() % "',";
+			insert_query += "'" % query.value(4).toString() % "',";
+			insert_query += "'" % query.value(5).toString() % "',";
+			insert_query += "'" % query.value(6).toString() % "',";
+			insert_query += "'" % query.value(7).toString();
+			insert_query += "');";
 
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
-			row << new QStandardItem(query.value(2).toString());
-			row << new QStandardItem(query.value(3).toString());
-			row << new QStandardItem(query.value(4).toString());
-			row << new QStandardItem(query.value(5).toString());
-			row << new QStandardItem(query.value(6).toString());
-
-			models->cookies.appendRow(row);
+			database->exec(insert_query);
 		}
+
 		query.clear();
+		insert_query.clear();
 	}
 	SQLITE_CLOSE(file)
 }
@@ -125,21 +144,23 @@ void Firefox_Extractor::extract_downloads(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery		query(db);
-		QList<QStandardItem*>	row;
+		QSqlQuery	query(db);
+		QString		insert_query;
 
 		query.exec("SELECT name, source, mimeType FROM moz_downloads ORDER BY startTime;");
 
 		while (query.next()) {
-			row.clear();
+			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
+			insert_query += "'" % query.value(0).toString() % "',";
+			insert_query += "'" % query.value(1).toString() % "',";
+			insert_query += "'" % query.value(2).toString();
+			insert_query += "');";
 
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
-			row << new QStandardItem(query.value(2).toString());
-
-			models->downloads.appendRow(row);
+			database->exec(insert_query);
 		}
+
 		query.clear();
+		insert_query.clear();
 	}
 	SQLITE_CLOSE(file)
 }
@@ -148,21 +169,23 @@ void Firefox_Extractor::extract_forms(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery		query(db);
-		QList<QStandardItem*>	row;
+		QSqlQuery	query(db);
+		QString		insert_query;
 
 		query.exec("SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins ORDER BY hostname;");
 
 		while (query.next()) {
-			row.clear();
+			insert_query = "INSERT INTO form (host, id, password) VALUES (";
+			insert_query += "'" % query.value(0).toString() % "',";
+			insert_query += "'" % query.value(1).toString() % "',";
+			insert_query += "'" % query.value(2).toString();
+			insert_query += "');";
 
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
-			row << new QStandardItem(query.value(2).toString());
-
-			models->forms.appendRow(row);
+			database->exec(insert_query);
 		}
+
 		query.clear();
+		insert_query.clear();
 	}
 	SQLITE_CLOSE(file)
 
@@ -173,19 +196,14 @@ void Firefox_Extractor::extract_search(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery		query(db);
-		QList<QStandardItem*>	row;
+		QSqlQuery	query(db);
 
 		query.exec("SELECT name, value FROM engine_data ORDER BY name;");
 
 		while (query.next()) {
-			row.clear();
-
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
-
-			models->searches.appendRow(row);
+			update_map(keyword_map, query.value(0).toString(), query.value(1).toUInt());
 		}
+
 		query.clear();
 	}
 	SQLITE_CLOSE(file)
@@ -195,21 +213,23 @@ void Firefox_Extractor::extract_signons(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 
-		QSqlQuery 		query(db);
-		QList<QStandardItem*>	row;
+		QSqlQuery 	query(db);
+		QString		insert_query;
 
 		query.exec("SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins ORDER BY hostname;");
 
 		while (query.next()) {
-			row.clear();
+			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
+			insert_query += "'" % query.value(0).toString() % "',";
+			insert_query += "'" % query.value(1).toString() % "',";
+			insert_query += "'" % query.value(2).toString();
+			insert_query += "');";
 
-			row << new QStandardItem(query.value(0).toString());
-			row << new QStandardItem(query.value(1).toString());
-			row << new QStandardItem(query.value(2).toString());
-
-			models->signons.appendRow(row);
+			database->exec(insert_query);
 		}
+
 		query.clear();
+		insert_query.clear();
 	}
 	SQLITE_CLOSE(file)
 }

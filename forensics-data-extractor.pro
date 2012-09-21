@@ -28,10 +28,13 @@ QT		+= core gui sql
 TARGET		= forensics-data-extractor
 TEMPLATE	= app
 
+CONFIG		+= thread
+
 # On Windows 0MQ's inproc is not supported, we use TCP connections instead
 win32:DEFINES	+= WINDOWS_OS
 win32:LIBS	+= -L../zeromq-2.1/lib32
 win32:INCLUDEPATH	+= ../zeromq-2.1/include
+INCLUDEPATH	+= include
 LIBS		+= -lzmq
 
 SOURCES		+= src/main.cpp \
@@ -41,16 +44,18 @@ SOURCES		+= src/main.cpp \
 		src/extractors/web_browser_extractor.cpp \
 		src/extractors/chrome_extractor.cpp \
 		src/configuration.cpp \
-		src/parsing_engine.cpp
+		src/parsing_engine.cpp \
+		src/database.cpp
 
-HEADERS		+= src/main_window.h\
-		src/common.h \
-		src/indexing_engine.h \
-		src/extractors/firefox_extractor.h \
-		src/extractors/web_browser_extractor.h\
-		src/extractors/chrome_extractor.h \
-		src/configuration.h \
-		src/parsing_engine.h
+HEADERS		+= include/main_window.h\
+		include/common.h \
+		include/indexing_engine.h \
+		include/extractors/firefox_extractor.h \
+		include/extractors/web_browser_extractor.h\
+		include/extractors/chrome_extractor.h \
+		include/configuration.h \
+		include/parsing_engine.h \
+		include/database.h
 
-FORMS		+= ui/main_window.ui \
+FORMS	+= ui/main_window.ui \
 		ui/configuration.ui

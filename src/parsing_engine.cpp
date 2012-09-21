@@ -25,14 +25,23 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "src/parsing_engine.h"
+#include "parsing_engine.h"
 
-Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, QStandardItemModel* model_files_list) : QThread()
+Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread()
 {
 	zmq_context = (zmq::context_t*) z_context;
+
+	if ( r_path.isEmpty() == true )
+		throw "r_path empty";
+
 	root_path = r_path;
+
 //	magic_object = magic_open(MAGIC_CHECK);
-	files_list = model_files_list;
+
+	if ( db == NULL )
+		throw "Databse is NULL";
+
+	database = db;
 
 //	if ( magic_object == NULL )
 //		qCritical() << "Cannot init the magic library";
@@ -88,7 +97,7 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 
 	Q_FOREACH(QString file, files) {
 		QString		abs_path_file;
-		QList<QStandardItem*>	row;
+		QString		query = "INSERT INTO parsed_file (file) VALUES ('";
 
 		abs_path_file = dir_path;
 		abs_path_file += "/";
@@ -96,8 +105,8 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 
 		send_zmq(abs_path_file.toStdString(), socket);
 
-		row << new QStandardItem(abs_path_file);
-		files_list->appendRow(row);
+		query += abs_path_file % "');";
+		database->exec(query);
 	}
 
 	Q_FOREACH(QString dir, directories) {

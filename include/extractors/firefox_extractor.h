@@ -1,7 +1,7 @@
 /**
  * Project: forensics-data-extractor
- * File name: configuration.cpp
- * Description: describes the configuration dialog
+ * File name: firefox_extractor.h
+ * Description: describes the object used to process Mozilla Firefox data
  *
  * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
@@ -25,23 +25,32 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "configuration.h"
-#include "ui_configuration.h"
+#ifndef FIREFOX_EXTRACTOR_H
+#define FIREFOX_EXTRACTOR_H
 
-Configuration::Configuration(QWidget *parent) :
-	QDialog(parent),
-	ui(new Ui::Configuration)
-{
-	ui->setupUi(this);
-}
+#include "web_browser_extractor.h"
 
-Configuration::~Configuration()
+class Firefox_Extractor : public Web_Browser_Extractor
 {
-	delete ui;
-}
+	public:
+		Firefox_Extractor(void* z_context, web_browser_models* models);
+		Firefox_Extractor(void* z_context, Database* db);
 
-void Configuration::on_tool_string_daemon_path_clicked()
-{
-	ui->line_strig_daemon_path->setText(QFileDialog::getOpenFileName(this, tr("Open File"), "", "Strigi Daemon"));
-}
+		~Firefox_Extractor();
+
+		virtual void	files_filter(const QString& file_path);
+
+		// TODO: think of scanning RDF files
+		void	extract_places(const QString& file);
+		void	extract_cookies(const QString& file);
+		void	extract_downloads(const QString& file);
+		void	extract_forms(const QString& file);
+		void	extract_search(const QString& file);
+		void	extract_signons(const QString& file);
+
+	private:
+//		void	search_files(const QString& dir_path);
+};
+
+#endif // FIREFOX_EXTRACTOR_H
 

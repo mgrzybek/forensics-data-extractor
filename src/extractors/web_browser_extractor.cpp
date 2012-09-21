@@ -25,7 +25,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "web_browser_extractor.h"
+#include "extractors/web_browser_extractor.h"
 
 Web_Browser_Extractor::Web_Browser_Extractor(
 		void*			z_context,
@@ -36,6 +36,24 @@ Web_Browser_Extractor::Web_Browser_Extractor(
 	models		= web_models;
 }
 
+Web_Browser_Extractor::Web_Browser_Extractor(
+		void*			z_context,
+		Database*		db
+		)
+{
+	if ( z_context == NULL )
+		throw "z_context is NULL";
+
+	zmq_context	= (zmq::context_t*) z_context;
+
+	if ( db == NULL )
+		throw "db is NULL";
+
+	database	= db;
+
+	models = NULL;
+}
+
 Web_Browser_Extractor::~Web_Browser_Extractor() {
 
 }
@@ -43,7 +61,7 @@ Web_Browser_Extractor::~Web_Browser_Extractor() {
 void Web_Browser_Extractor::run()
 {
 	zmq::socket_t	socket(*zmq_context, ZMQ_SUB);
-	bool		connected = false;
+	bool			connected = false;
 
 	while ( connected == false ) {
 		try {
@@ -55,8 +73,8 @@ void Web_Browser_Extractor::run()
 #endif
 			connected = true;
 			while (1) {
-				QString string_message;
-				zmq::message_t  z_message;
+				QString			string_message;
+				zmq::message_t	z_message;
 
 				socket.recv(&z_message);
 				string_message = static_cast<char*>(z_message.data());
@@ -66,17 +84,19 @@ void Web_Browser_Extractor::run()
 				else
 					break;
 			}
-			append_extracted_files_to_model_files();
 		} catch (const std::exception& e) {
 			qCritical() << "Web_Browser_Extractor: " << e.what();
 		}
 	}
+
 	connected = false;
-	update_model_places();
+	set_files_to_analysed();
+	update_db_places();
+	update_db_search();
 	emit finished();
 	qDebug() << "Web_Browser_Extrator: thread end";
 }
-
+/*
 void Web_Browser_Extractor::append_extracted_files_to_model_files() {
 	// cookies
 	append_files_to_model_files(files.cookies);
@@ -91,44 +111,72 @@ void Web_Browser_Extractor::append_extracted_files_to_model_files() {
 	// signons
 	append_files_to_model_files(files.signons);
 }
+*/
+void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& key, const uint& value) {
+	if ( value > 0 ) {
+		QMap<QString, uint>::iterator iter = map.find(key);
 
-void Web_Browser_Extractor::append_files_to_model_files(const QStringList& f) {
-	QList<QStandardItem*>	row;
-
-	Q_FOREACH (QString file, f) {
-		row << new QStandardItem(file);
-		models->extracted_files.appendRow(row);
-		row.clear();
-	}
-}
-
-void	Web_Browser_Extractor::update_url_map(const QString& url, const uint& count) {
-	if ( url.isEmpty() == false and count > 0 ) {
-		QMap<QString, uint>::iterator iter = url_map.find(url);
-
-		if ( iter == url_map.end() ) {
-			url_map.insert(url, count);
+		if ( iter == map.end() ) {
+			map.insert(key, value);
 		} else {
-			iter.value() += count;
+			iter.value() += value;
 		}
 	}
 }
 
-void Web_Browser_Extractor::update_model_places() {
-	QList<QStandardItem*>	row;
+void	Web_Browser_Extractor::update_db_places() {
+	dir_path.clear(); // TODO: check if it is useful
 
-	dir_path.clear();
+	qDebug() << "URL Map size: " << url_map.size();
 
 	for ( QMap<QString, uint>::const_iterator iter = url_map.begin() ; iter != url_map.end() ; iter++ ) {
-		row.clear();
+		QStringList	queries;
+		QString		query;
 
-		row << new QStandardItem(QString::number(iter.value()));
-		row << new QStandardItem(iter.key());
+		query = "INSERT OR IGNORE INTO place (site, hits) VALUES ('" % iter.key() % "',0);";
+		queries << query;
+		query = "UPDATE place SET hits = hits + " % QString::number(iter.value()) % " WHERE site = '" % iter.key() % "';";
+		queries << query;
 
-		models->places.appendRow(row);
+		//qDebug() << "update_model_places()" << queries;
+
+		database->exec(queries);
 	}
-	row.clear();
+
 	// TODO: keep clear() ?
 	url_map.clear();
 }
 
+void	Web_Browser_Extractor::update_db_search() {
+	qDebug() << "Keywords Map size: " << keyword_map.size();
+
+	for ( QMap<QString, uint>::const_iterator iter = keyword_map.begin() ; iter != keyword_map.end() ; iter++ ) {
+		QStringList	queries;
+		QString		query;
+
+		query = "INSERT OR IGNORE INTO search (name, hits) VALUES ('" % iter.key() % "',0);";
+		queries << query;
+		query = "UPDATE search SET hits = hits + " % QString::number(iter.value()) % " WHERE name = '" % iter.key() % "';";
+		queries << query;
+
+		//qDebug() << "update_model_places()" << queries;
+
+		database->exec(queries);
+	}
+
+	// TODO: keep clear() ?
+	keyword_map.clear();
+}
+
+void	Web_Browser_Extractor::set_files_to_analysed() {
+	QString		query;
+	QStringList	queries;
+
+	Q_FOREACH(QString file, files) {
+		query = "UPDATE parsed_file SET analysed = 1 WHERE file = '" % file % "';";
+		queries << query;
+		query.clear();
+	}
+
+	database->exec(queries);
+}

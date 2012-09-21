@@ -241,7 +241,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
-             <widget class="QListView" name="indexed_list">
+             <widget class="QTableView" name="indexed_list">
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAlwaysOn</enum>
               </property>
@@ -251,11 +251,11 @@
           </widget>
           <widget class="QWidget" name="tab_files_found">
            <attribute name="title">
-            <string>Fichiers trouvés</string>
+            <string>Fichiers extraits</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <widget class="QListView" name="extracted_list"/>
+             <widget class="QTableView" name="extracted_list"/>
             </item>
            </layout>
           </widget>
@@ -449,6 +449,7 @@
     </property>
     <addaction name="action_New_Analysis"/>
     <addaction name="action_Open_Analysis"/>
+    <addaction name="action_Save_Analysis"/>
     <addaction name="action_Close_Analysis"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
@@ -509,6 +510,11 @@
   <action name="action_Preferences">
    <property name="text">
     <string>Préférences</string>
+   </property>
+  </action>
+  <action name="action_Save_Analysis">
+   <property name="text">
+    <string>Enregistrer l'analyse</string>
    </property>
   </action>
  </widget>
