@@ -43,7 +43,7 @@
 #include <QFile>
 #include <QDir>
 
-#include "database.h"
+#include "include/database.h"
 
 class Parsing_Engine : public QThread
 {

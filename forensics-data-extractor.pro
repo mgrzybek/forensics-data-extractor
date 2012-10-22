@@ -30,6 +30,9 @@ TEMPLATE	= app
 
 CONFIG		+= thread
 
+# C++11 support: ZeroMQ is not ready yet
+#QMAKE_CXXFLAGS += -std=c++0x
+
 # On Windows 0MQ's inproc is not supported, we use TCP connections instead
 win32:DEFINES	+= WINDOWS_OS
 win32:LIBS	+= -L../zeromq-2.1/lib32
