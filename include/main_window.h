@@ -35,6 +35,7 @@
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QErrorMessage>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
 

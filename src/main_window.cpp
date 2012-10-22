@@ -328,7 +328,14 @@ void Main_Window::on_action_New_Analysis_triggered() {
 		working_directory = project_directory.path();
 		db_file += working_directory + "/analysis.db";
 
-		db = new Database(db_file);
+		try {
+			db = new Database(db_file);
+		} catch (const std::exception& e) {
+			QErrorMessage error_msg;
+			error_msg.showMessage("Cannot init the database");
+			error_msg.exec();
+			return;
+		}
 
 		ui->action_New_Analysis->setDisabled(true);
 		ui->action_Open_Analysis->setDisabled(true);
@@ -360,7 +367,14 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 	working_directory = project_file.absoluteDir().absolutePath();
 	db_file += working_directory + "/analysis.db";
 
-	db = new Database(db_file);
+	try {
+		db = new Database(db_file);
+	} catch (const std::exception& e) {
+		QErrorMessage error_msg;
+		error_msg.showMessage("Cannot init the database");
+		error_msg.exec();
+		return;
+	}
 
 	qDebug() << working_directory;
 

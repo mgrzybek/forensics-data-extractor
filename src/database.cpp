@@ -28,18 +28,23 @@ bool	Database::exec(const QString& query) {
 
 	if ( db.transaction() == false ) {
 		qCritical() << "Transaction begin failed: " << db.lastError().text();
+		db.rollback();
+		qCritical() << "Rollback!";
 		mutex.unlock();
 		return false;
 	}
 
 	if ( atomic_exec(query) == false ) {
-		qCritical() << "Failure: " << query;
+		db.rollback();
+		qCritical() << "Rollback!";
 		mutex.unlock();
 		return false;
 	}
 
 	if ( db.commit() == false ) {
 		qCritical() << "Commit failed: " << db.lastError().text();
+		db.rollback();
+		qCritical() << "Rollback!";
 		mutex.unlock();
 		return  false;
 	}
@@ -53,17 +58,24 @@ bool	Database::exec(const QStringList& queries) {
 
 	if ( db.transaction() == false ) {
 		qCritical() << "Transaction begin failed: " << db.lastError().text();
+		db.rollback();
 		mutex.unlock();
 		return false;
 	}
 
 	Q_FOREACH(QString query, queries) {
-		if ( atomic_exec(query) == false )
-			qCritical() << "Failure: " << query;
+		if ( atomic_exec(query) == false ) {
+			db.rollback();
+			qCritical() << "Rollback!";
+			mutex.unlock();
+			return false;
+		}
 	}
 
 	if ( db.commit() == false ) {
 		qCritical() << "Commit failed: " << db.lastError().text();
+		db.rollback();
+		qCritical() << "Rollback!";
 		mutex.unlock();
 		return  false;
 	}
@@ -101,7 +113,7 @@ bool	Database::init_schema() {
 	queries << "CREATE TABLE IF NOT EXISTS signon (host TEXT PRIMARY KEY, id TEXT NOT NULL, password TEXT NOT NULL );";
 	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, analysed INTEGER DEFAULT '0');";
 
-	queries << "CREATE VIEW analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
+	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
 
 	return exec(queries);
 }
@@ -109,12 +121,12 @@ bool	Database::init_schema() {
 bool	Database::atomic_exec(const QString& query) {
 	QSqlQuery	q(db);
 
-	//qDebug() << query;
 	if ( q.exec(query) == false ) {
-		qCritical() << "Failure: " << q.lastError().text();
+		qCritical() << "Atomic exec failed on" << query << " " << q.lastError().text();
 		return false;
 	}
 
+	qDebug() << "query OK: " << query;
 	return true;
 }
 
