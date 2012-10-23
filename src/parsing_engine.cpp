@@ -30,15 +30,23 @@
 Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread() {
 	zmq_context = (zmq::context_t*) z_context;
 
-	if ( r_path.isEmpty() == true )
-		throw "r_path empty";
+	if ( r_path.isEmpty() == true ) {
+		e.calling_method = "Parsing_Engine";
+		e.msg = "r_path is empty";
+
+		throw e;
+	}
 
 	root_path = r_path;
 
 //	magic_object = magic_open(MAGIC_CHECK);
 
-	if ( db == NULL )
-		throw "Databse is NULL";
+	if ( db == NULL ) {
+		e.calling_method = "Parsing_Engine";
+		e.msg = "Databse is NULL";
+
+		throw e;
+	}
 
 	database = db;
 

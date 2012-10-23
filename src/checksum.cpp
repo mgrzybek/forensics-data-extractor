@@ -3,7 +3,7 @@
 Checksum::Checksum(struct_file* f)
 {
 	if ( f == NULL )
-		throw "Input is NULL!";
+		throw Exception("Checksum", "Input is NULL!");
 
 	file = f;
 }

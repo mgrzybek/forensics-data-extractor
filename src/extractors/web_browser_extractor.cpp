@@ -32,17 +32,25 @@ Web_Browser_Extractor::Web_Browser_Extractor(
 		Database*		db
 		)
 {
-	if ( z_context == NULL )
-		throw "z_context is NULL";
+	if ( z_context == NULL ) {
+		e.calling_method = "Web_Browser_Extractor";
+		e.msg = "z_context is NULL";
+
+		throw e;
+	}
 
 	zmq_context	= (zmq::context_t*) z_context;
 
-	if ( db == NULL )
-		throw "db is NULL";
+	if ( db == NULL ) {
+		e.calling_method = "Web_Browser_Extractor";
+		e.msg = "db is NULL";
+
+		throw e;
+	}
 
 	database	= db;
 
-	models = NULL;
+	models	= NULL;
 }
 
 Web_Browser_Extractor::~Web_Browser_Extractor() {

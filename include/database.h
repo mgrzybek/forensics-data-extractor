@@ -106,6 +106,8 @@ class Database : public QObject
 
 		QSqlDatabase	analysis_db;
 		QMutex			analysis_mutex;
+
+		Exception		e;
 };
 
 #endif // DATABASE_H

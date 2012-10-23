@@ -103,6 +103,8 @@ class Parsing_Engine : public QThread
 		Database*		database;
 //		magichandle_t*	magic_object;
 
+		Exception		e;
+
 		/*
 		 * recursive_search
 		 *

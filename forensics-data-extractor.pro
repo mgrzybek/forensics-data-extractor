@@ -49,7 +49,8 @@ SOURCES		+= src/main.cpp \
 		src/configuration.cpp \
 		src/parsing_engine.cpp \
 		src/database.cpp \
-		src/checksum.cpp
+		src/checksum.cpp \
+    src/exception.cpp
 
 HEADERS		+= include/main_window.h\
 		include/common.h \
@@ -60,7 +61,8 @@ HEADERS		+= include/main_window.h\
 		include/configuration.h \
 		include/parsing_engine.h \
 		include/database.h \
-		include/checksum.h
+		include/checksum.h \
+    include/exception.h
 
 FORMS	+=	ui/main_window.ui \
 		ui/configuration.ui

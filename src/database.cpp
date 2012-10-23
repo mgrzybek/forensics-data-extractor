@@ -4,13 +4,20 @@ Database::Database(const QString& analysis_db_file) {
 	analysis_db = QSqlDatabase::addDatabase("QSQLITE", analysis_db_file);
 	analysis_db.setDatabaseName(analysis_db_file);
 
-	// TODO: throw an exception
 	if ( analysis_db.open() == false ) {
-		qCritical() << "Cannot connect to the database " << analysis_db_file;
+		e.msg = "Cannot connect to the database ";
+		e.msg += analysis_db_file;
+		e.calling_method = "Database";
+
+		throw e;
 	}
 
-	if ( init_schema() == false )
-		throw "init failed";
+	if ( init_schema() == false ) {
+		e.msg = "Cannot init the analysis database";
+		e.calling_method = "Database";
+
+		throw e;
+	}
 }
 
 Database::~Database() {

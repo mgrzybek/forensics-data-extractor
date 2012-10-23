@@ -28,12 +28,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "openssl/md5.h"
-#include "openssl/sha.h"
+#include <openssl/md5.h>
+#include <openssl/sha.h>
 
 #include <QStandardItemModel>
 #include <QSqlTableModel>
 #include <QStringList>
+
+#include "exception.h"
 
 #define SQLITE_OPEN(db_file) \
 	QSqlDatabase db; \
@@ -63,17 +65,6 @@ typedef struct {
 	QSqlTableModel*	signons;
 	QSqlTableModel*	extracted_files;
 } web_browser_models;
-
-/*
-typedef struct {
-	QStringList	cookies;
-	QStringList	downloads;
-	QStringList	forms;
-	QStringList	places;
-	QStringList	searches;
-	QStringList	signons;
-} web_browser_analysed_files;
-*/
 
 #endif // COMMON_H
 
