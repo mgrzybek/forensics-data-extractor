@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QtSql>
 
+#include "common.h"
+
 class Database : public QObject
 {
 	Q_OBJECT
@@ -16,6 +18,8 @@ class Database : public QObject
 
 		bool			exec(const QString& query);
 		bool			exec(const QStringList& queries);
+		bool			insert_file(const struct_file& file);
+//		bool			burst_insert_file(const struct_file& file);
 
 		QSqlDatabase*	get_db();
 

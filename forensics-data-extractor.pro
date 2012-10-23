@@ -38,7 +38,7 @@ win32:DEFINES	+= WINDOWS_OS
 win32:LIBS	+= -L../zeromq-2.1/lib32
 win32:INCLUDEPATH	+= ../zeromq-2.1/include
 INCLUDEPATH	+= include
-LIBS		+= -lzmq
+LIBS		+= -lzmq -lssl -lcrypto
 
 SOURCES		+= src/main.cpp \
 		src/main_window.cpp \
@@ -48,7 +48,8 @@ SOURCES		+= src/main.cpp \
 		src/extractors/chrome_extractor.cpp \
 		src/configuration.cpp \
 		src/parsing_engine.cpp \
-		src/database.cpp
+		src/database.cpp \
+		src/checksum.cpp
 
 HEADERS		+= include/main_window.h\
 		include/common.h \
@@ -58,7 +59,9 @@ HEADERS		+= include/main_window.h\
 		include/extractors/chrome_extractor.h \
 		include/configuration.h \
 		include/parsing_engine.h \
-		include/database.h
+		include/database.h \
+		include/checksum.h
 
-FORMS	+= ui/main_window.ui \
+FORMS	+=	ui/main_window.ui \
 		ui/configuration.ui
+

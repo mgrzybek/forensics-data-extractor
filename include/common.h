@@ -28,6 +28,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include "openssl/md5.h"
+#include "openssl/sha.h"
+
 #include <QStandardItemModel>
 #include <QSqlTableModel>
 #include <QStringList>
@@ -44,6 +47,12 @@
 
 #define SQLITE_CLOSE(db_file) \
 	QSqlDatabase::removeDatabase(db_file);
+
+typedef struct {
+	QString	full_path;
+	uchar	sha1[SHA_DIGEST_LENGTH];
+	uchar	md5[MD5_DIGEST_LENGTH];
+} struct_file;
 
 typedef struct {
 	QSqlTableModel*	cookies;

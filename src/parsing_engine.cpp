@@ -95,18 +95,19 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 	if ( continue_scan == false )
 		return;
 
+	// TODO: create file structs (name + checksums) to be able to deal with big inserts or NoSQL
 	Q_FOREACH(QString file, files) {
-		QString		abs_path_file;
-		QString		query = "INSERT INTO parsed_file (file) VALUES ('";
+		struct_file	s_file;
 
-		abs_path_file = dir_path;
-		abs_path_file += "/";
-		abs_path_file += file;
+		s_file.full_path = dir_path;
+		s_file.full_path += "/";
+		s_file.full_path += file;
 
-		send_zmq(abs_path_file.toStdString(), socket);
+		Checksum	checksum_calculator(&s_file);
+		checksum_calculator.process_all();
 
-		query += abs_path_file % "');";
-		database->exec(query);
+		send_zmq(s_file.full_path.toAscii().constData(), socket);
+		database->insert_file(s_file);
 	}
 
 	Q_FOREACH(QString dir, directories) {

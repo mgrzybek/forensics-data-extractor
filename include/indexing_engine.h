@@ -48,15 +48,16 @@ class Indexing_Engine : public QThread
 {
 	public:
 		Indexing_Engine(const QString& e_path, const QString& w_directory);
-		void   run();
+		void	run();
 
-		void    add_indexed_folders(const QStringList& folders);
+		void	add_indexed_folders(const QStringList& folders);
 
 	private:
-		QString engine_path;
-		QString working_directory;
-		QStringList     indexed_folders;
-		bool    create_conf_file();
+		QString		engine_path;
+		QString		working_directory;
+		QStringList	indexed_folders;
+
+		bool	create_conf_file();
 };
 
 #endif // SEARCH_ENGINE_H

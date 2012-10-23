@@ -44,6 +44,7 @@
 #include <QDir>
 
 #include "include/database.h"
+#include "include/checksum.h"
 
 class Parsing_Engine : public QThread
 {

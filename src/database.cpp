@@ -111,7 +111,7 @@ bool	Database::init_schema() {
 	//queries << "CREATE TABLE IF NOT EXISTS search (name TEXT PRIMARY KEY, value TEXT UNIQUE NOT NULL, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS search (name TEXT PRIMARY KEY, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS signon (host TEXT PRIMARY KEY, id TEXT NOT NULL, password TEXT NOT NULL );";
-	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, analysed INTEGER DEFAULT '0');";
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0');";
 
 	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
 
@@ -130,3 +130,15 @@ bool	Database::atomic_exec(const QString& query) {
 	return true;
 }
 
+bool	Database::insert_file(const struct_file& file) {
+	QString	query = "INSERT INTO parsed_file (file, md5, sha1) VALUES ('";
+
+	query += file.full_path % "','";
+	query += (char*) file.md5;
+	query += "','";
+	query += (char*) file.sha1;
+	query += "');";
+
+	printf("sha1: %s and md5: %s\n", file.sha1, file.md5);
+	return exec(query);
+}
