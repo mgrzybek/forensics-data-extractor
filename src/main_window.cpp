@@ -348,7 +348,7 @@ void Main_Window::on_action_New_Analysis_triggered() {
 
 	ui->action_Close_Analysis->setEnabled(true);
 
-	init_models(*db->get_db());
+	init_models(*db->get_analysis_db());
 }
 
 void Main_Window::on_action_Quit_triggered() {
@@ -383,7 +383,7 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 
 	ui->tab_results->setVisible(true);
 
-	init_models(*db->get_db());
+	init_models(*db->get_analysis_db());
 }
 
 void Main_Window::on_action_Close_Analysis_triggered() {

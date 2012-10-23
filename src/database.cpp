@@ -1,12 +1,12 @@
 #include "database.h"
 
-Database::Database(const QString& db_file) {
-	db = QSqlDatabase::addDatabase("QSQLITE", db_file);
-	db.setDatabaseName(db_file);
+Database::Database(const QString& analysis_db_file) {
+	analysis_db = QSqlDatabase::addDatabase("QSQLITE", analysis_db_file);
+	analysis_db.setDatabaseName(analysis_db_file);
 
 	// TODO: throw an exception
-	if ( db.open() == false ) {
-		qCritical() << "Cannot connect to the database " << db_file;
+	if ( analysis_db.open() == false ) {
+		qCritical() << "Cannot connect to the database " << analysis_db_file;
 	}
 
 	if ( init_schema() == false )
@@ -15,82 +15,82 @@ Database::Database(const QString& db_file) {
 
 Database::~Database() {
 	// We never unlock the mutex because the object is destroyed
-	mutex.lock();
+	analysis_mutex.lock();
 
-	QString connection_name = db.databaseName();
-	db.close();
+	QString connection_name = analysis_db.databaseName();
+	analysis_db.close();
 
 	QSqlDatabase::removeDatabase(connection_name);
 }
 
 bool	Database::exec(const QString& query) {
-	mutex.lock();
+	analysis_mutex.lock();
 
-	if ( db.transaction() == false ) {
-		qCritical() << "Transaction begin failed: " << db.lastError().text();
-		db.rollback();
+	if ( analysis_db.transaction() == false ) {
+		qCritical() << "Transaction begin failed: " << analysis_db.lastError().text();
+		analysis_db.rollback();
 		qCritical() << "Rollback!";
-		mutex.unlock();
+		analysis_mutex.unlock();
 		return false;
 	}
 
 	if ( atomic_exec(query) == false ) {
-		db.rollback();
+		analysis_db.rollback();
 		qCritical() << "Rollback!";
-		mutex.unlock();
+		analysis_mutex.unlock();
 		return false;
 	}
 
-	if ( db.commit() == false ) {
-		qCritical() << "Commit failed: " << db.lastError().text();
-		db.rollback();
+	if ( analysis_db.commit() == false ) {
+		qCritical() << "Commit failed: " << analysis_db.lastError().text();
+		analysis_db.rollback();
 		qCritical() << "Rollback!";
-		mutex.unlock();
+		analysis_mutex.unlock();
 		return  false;
 	}
 
-	mutex.unlock();
+	analysis_mutex.unlock();
 	return true;
 }
 
 bool	Database::exec(const QStringList& queries) {
-	mutex.lock();
+	analysis_mutex.lock();
 
-	if ( db.transaction() == false ) {
-		qCritical() << "Transaction begin failed: " << db.lastError().text();
-		db.rollback();
-		mutex.unlock();
+	if ( analysis_db.transaction() == false ) {
+		qCritical() << "Transaction begin failed: " << analysis_db.lastError().text();
+		analysis_db.rollback();
+		analysis_mutex.unlock();
 		return false;
 	}
 
 	Q_FOREACH(QString query, queries) {
 		if ( atomic_exec(query) == false ) {
-			db.rollback();
+			analysis_db.rollback();
 			qCritical() << "Rollback!";
-			mutex.unlock();
+			analysis_mutex.unlock();
 			return false;
 		}
 	}
 
-	if ( db.commit() == false ) {
-		qCritical() << "Commit failed: " << db.lastError().text();
-		db.rollback();
+	if ( analysis_db.commit() == false ) {
+		qCritical() << "Commit failed: " << analysis_db.lastError().text();
+		analysis_db.rollback();
 		qCritical() << "Rollback!";
-		mutex.unlock();
+		analysis_mutex.unlock();
 		return  false;
 	}
 
-	mutex.unlock();
+	analysis_mutex.unlock();
 	return true;
 }
 
-QSqlDatabase*	Database::get_db() {
-	return &db;
+QSqlDatabase*	Database::get_analysis_db() {
+	return &analysis_db;
 }
 
 uint	Database::get_row_count(const QString& table_name) {
 	QString		query;
-	QSqlQuery	q(db);
+	QSqlQuery	q(analysis_db);
 
 	query = "SELECT COUNT(*) FROM " % table_name % ";";
 	q.exec(query);
@@ -119,7 +119,7 @@ bool	Database::init_schema() {
 }
 
 bool	Database::atomic_exec(const QString& query) {
-	QSqlQuery	q(db);
+	QSqlQuery	q(analysis_db);
 
 	if ( q.exec(query) == false ) {
 		qCritical() << "Atomic exec failed on" << query << " " << q.lastError().text();
@@ -141,4 +141,8 @@ bool	Database::insert_file(const struct_file& file) {
 
 	printf("sha1: %s and md5: %s\n", file.sha1, file.md5);
 	return exec(query);
+}
+
+bool	Database::is_known_file(const struct_file& f) {
+
 }

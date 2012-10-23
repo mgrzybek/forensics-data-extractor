@@ -29,15 +29,6 @@
 
 Web_Browser_Extractor::Web_Browser_Extractor(
 		void*			z_context,
-		web_browser_models*	web_models
-		)
-{
-	zmq_context	= (zmq::context_t*) z_context;
-	models		= web_models;
-}
-
-Web_Browser_Extractor::Web_Browser_Extractor(
-		void*			z_context,
 		Database*		db
 		)
 {
@@ -96,22 +87,7 @@ void Web_Browser_Extractor::run()
 	emit finished();
 	qDebug() << "Web_Browser_Extrator: thread end";
 }
-/*
-void Web_Browser_Extractor::append_extracted_files_to_model_files() {
-	// cookies
-	append_files_to_model_files(files.cookies);
-	// downloads
-	append_files_to_model_files(files.downloads);
-	// forms
-	append_files_to_model_files(files.forms);
-	// places
-	append_files_to_model_files(files.places);
-	// search
-	append_files_to_model_files(files.searches);
-	// signons
-	append_files_to_model_files(files.signons);
-}
-*/
+
 void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& key, const uint& value) {
 	if ( value > 0 ) {
 		QMap<QString, uint>::iterator iter = map.find(key);

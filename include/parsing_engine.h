@@ -51,11 +51,37 @@ class Parsing_Engine : public QThread
 	Q_OBJECT
 
 	public:
+		/*
+		 * Constructor
+		 *
+		 * @arg	z_context	: the ZMQ context to be used
+		 * @arg	r_path		: the path to parse
+		 * @arg	db			: the database used to store the analysis's data
+		 *
+		 */
 		Parsing_Engine(void* z_context, const QString& r_path, Database* db);
+
+		/*
+		 * Destructor
+		 */
 		~Parsing_Engine();
 
+		/*
+		 * run
+		 *
+		 * This method needs to be written to allow QThread to start
+		 *
+		 */
 		void	run();
 
+		/*
+		 * set_root_path
+		 *
+		 * Update root_path attribute
+		 *
+		 * @arg	dir_path	:	the new path
+		 *
+		 */
 		void	set_root_path(const QString& dir_path);
 
 	signals:
@@ -78,9 +104,23 @@ class Parsing_Engine : public QThread
 //		magichandle_t*	magic_object;
 
 		/*
-		 * Methods
+		 * recursive_search
+		 *
+		 * @arg	socket	:	the ZMQ socket to use
+		 * @arg	dir_path	:	 the directory to scan
+		 *
 		 */
 		void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
+
+		/*
+		 * send_zmq
+		 *
+		 * Used to send messages through ZMQ system
+		 *
+		 * @arg	message	:	the string to send
+		 * @arg	socket	:	the ZMQ socket to use
+		 *
+		 */
 		void	send_zmq(const std::string& message, zmq::socket_t& socket);
 };
 

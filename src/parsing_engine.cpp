@@ -95,7 +95,6 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 	if ( continue_scan == false )
 		return;
 
-	// TODO: create file structs (name + checksums) to be able to deal with big inserts or NoSQL
 	Q_FOREACH(QString file, files) {
 		struct_file	s_file;
 
@@ -106,6 +105,7 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 		Checksum	checksum_calculator(&s_file);
 		checksum_calculator.process_all();
 
+		// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
 		send_zmq(s_file.full_path.toAscii().constData(), socket);
 		database->insert_file(s_file);
 	}

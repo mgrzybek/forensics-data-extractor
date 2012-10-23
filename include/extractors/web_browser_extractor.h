@@ -48,11 +48,29 @@ class Web_Browser_Extractor : public QThread
 //	Q_OBJECT
 
 	public:
-		Web_Browser_Extractor(void* z_context, web_browser_models* web_models);
+		/*
+		 * Constructor
+		 *
+		 * @arg	z_context	: ZMQ context to be used
+		 * @arg	db			: the analysis's database to update
+		 *
+		 */
 		Web_Browser_Extractor(void* z_context, Database* db);
 
+		/*
+		 * Destructor
+		 *
+		 * Declared as virtual: each derived class has specific objects to destroy
+		 *
+		 */
 		~Web_Browser_Extractor() = 0;
 
+		/*
+		 * run
+		 *
+		 * This method needs to be written to allow QThread to start
+		 *
+		 */
 		void	run();
 
 		virtual void	files_filter(const QString& file_path) = 0;

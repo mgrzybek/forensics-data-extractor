@@ -13,7 +13,7 @@ bool	Checksum::process_all() {
 	MD5_CTX	md5_ctx;
 	uchar	data[1024];
 	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
-	int		bytes;
+	int	bytes;
 
 	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
 		qCritical() << "Cannot init hash engines";
