@@ -94,6 +94,8 @@ class Web_Browser_Extractor : public QThread
 		//web_browser_analysed_files	files;
 		QStringList			files;
 
+		Exception			e;
+
 		//void	append_extracted_files_to_model_files();
 		void	append_files_to_model_files(const QStringList& f);
 

@@ -106,16 +106,22 @@ void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_
 	Q_FOREACH(QString file, files) {
 		struct_file	s_file;
 
+		// We need  to initialize these QString to prevent segfaults in checksum_calculator
+		s_file.sha1 = "";
+		s_file.md5 = "";
+
 		s_file.full_path = dir_path;
 		s_file.full_path += "/";
 		s_file.full_path += file;
 
-		Checksum	checksum_calculator(&s_file);
-		checksum_calculator.process_all();
+		if ( database->is_parsed_file(s_file) == false ) {
+			Checksum	checksum_calculator(&s_file);
+			checksum_calculator.process_all();
 
-		// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-		send_zmq(s_file.full_path.toAscii().constData(), socket);
-		database->insert_file(s_file);
+			// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
+			send_zmq(s_file.full_path.toAscii().constData(), socket);
+			database->insert_file(s_file);
+		}
 	}
 
 	Q_FOREACH(QString dir, directories) {
@@ -140,3 +146,11 @@ void Parsing_Engine::send_zmq(const std::string& message, zmq::socket_t& socket)
    }
 */
 
+bool	Parsing_Engine::is_known(const struct_file& file) {
+	Q_FOREACH(Generic_Database* g_db, *known_files_dbs) {
+		if ( g_db->is_known(file) == true )
+			return true;
+	}
+
+	return false;
+}

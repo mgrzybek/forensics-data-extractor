@@ -71,6 +71,30 @@ class Database : public QObject
 		bool			is_known_file(const struct_file& f);
 
 		/*
+		 * is_analysed_file
+		 *
+		 * Queries the analysed_file view to answer the question:
+		 * - has this file already been analysed?
+		 *
+		 * @arg	f	: the file to check
+		 *
+		 * @return	true (yes)
+		 */
+		bool			is_analysed_file(const struct_file& f);
+
+		/*
+		 * is_parsed_file
+		 *
+		 * Queries the file table to answer the question:
+		 * - has this file already been parsed?
+		 *
+		 * @arg	f	: the file to check
+		 *
+		 * @return	true (yes)
+		 */
+		bool			is_parsed_file(const struct_file& f);
+
+		/*
 		 * get_analysis_db
 		 */
 		QSqlDatabase*	get_analysis_db();

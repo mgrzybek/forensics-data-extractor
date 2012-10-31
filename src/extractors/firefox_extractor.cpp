@@ -26,7 +26,7 @@
  */
 
 #include "extractors/firefox_extractor.h"
-
+/*
 Firefox_Extractor::Firefox_Extractor(
 		void*			z_context,
 		web_browser_models*	models
@@ -37,7 +37,7 @@ Firefox_Extractor::Firefox_Extractor(
 {
 	url_map.clear();
 }
-
+*/
 Firefox_Extractor::Firefox_Extractor(
 		void*		z_context,
 		Database*	db

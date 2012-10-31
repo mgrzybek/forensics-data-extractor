@@ -29,8 +29,11 @@
 
 Checksum::Checksum(struct_file* f)
 {
-	if ( f == NULL )
-		throw Exception("Checksum", "Input is NULL!");
+	if ( f == NULL ) {
+		e.calling_method = "Checksum::Checksum";
+		e.msg = "The given argument is NULL";
+		throw e;
+	}
 
 	file = f;
 }
@@ -38,8 +41,13 @@ Checksum::Checksum(struct_file* f)
 bool	Checksum::process_all() {
 	SHA_CTX	sha1_ctx;
 	MD5_CTX	md5_ctx;
+
 	uchar	data[1024];
+	uchar	sha1[SHA_DIGEST_LENGTH];
+	uchar	md5[MD5_DIGEST_LENGTH];
+
 	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
+	char	buffer;
 	int	bytes;
 
 	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
@@ -62,11 +70,22 @@ bool	Checksum::process_all() {
 	} catch (const std::exception& e) {
 	}
 
-	if ( SHA1_Final(file->sha1, &sha1_ctx) == 0 or MD5_Final(file->md5, &md5_ctx) == 0 ) {
+	if ( SHA1_Final(sha1, &sha1_ctx) == 0 or MD5_Final(md5, &md5_ctx) == 0 ) {
 		// error !
 		return false;
 	}
 
-	qDebug() << "sha1: " << file->sha1;
+	file->sha1.clear();
+	for (int i = 0 ; i < SHA_DIGEST_LENGTH / 2 ; ++i) {
+		sprintf(&buffer, "%02x", sha1[i]);
+		file->sha1.append(buffer);
+	}
+
+	file->md5.clear();
+	for (int i = 0 ; i < MD5_DIGEST_LENGTH / 2 ; ++i) {
+		sprintf(&buffer, "%02x", md5[i]);
+		file->md5.append(buffer);
+	}
+
 	return true;
 }

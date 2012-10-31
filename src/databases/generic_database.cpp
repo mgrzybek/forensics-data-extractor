@@ -1,9 +1,9 @@
 /**
  * Project: forensics-data-extractor
- * File name: main.cpp
- * Description: the main function of the program
+ * File name: generic_database.cpp
+ * Description: describes the virtual interface to query files databases
  *
- * @author Mathieu Grzybek on 2012-05-20
+ * @author Mathieu Grzybek on 2012-10-29
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
@@ -25,20 +25,4 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include <QtGui/QApplication>
-#include "main_window.h"
-
-int main(int argc, char *argv[])
-{
-	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
-	QCoreApplication::setApplicationName("Qt-Console");
-
-	zmq::context_t zmq_context(1);
-	QApplication a(argc, argv);
-
-	Main_Window w((void*)&zmq_context);
-	w.show();
-
-	return a.exec();
-}
-
+#include "databases/generic_database.h"

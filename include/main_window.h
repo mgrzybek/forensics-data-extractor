@@ -47,6 +47,8 @@
 #include "indexing_engine.h"
 #include "parsing_engine.h"
 #include "configuration.h"
+#include "databases/generic_database.h"
+#include "databases/nsrl.h"
 
 namespace Ui {
 	class Main_Window;
@@ -106,11 +108,14 @@ class Main_Window : public QMainWindow
 		/*
 		 * Processing classes
 		 */
+		generic_database_list	known_files_databases;
 		Parsing_Engine*		search_engine;
 		Firefox_Extractor*	firefox_engine;
 		Chrome_Extractor*	chrome_engine;
 
 		Indexing_Engine*	index_engine;
+
+		QList<Generic_Database>	g_db;
 
 		bool	scan_in_progress;
 		bool	index_in_progress;

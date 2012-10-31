@@ -1,9 +1,9 @@
 /**
  * Project: forensics-data-extractor
- * File name: main.cpp
- * Description: the main function of the program
+ * File name: nsrl.h
+ * Description: describes the NSRL interface
  *
- * @author Mathieu Grzybek on 2012-05-20
+ * @author Mathieu Grzybek on 2012-10-29
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
@@ -25,20 +25,25 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include <QtGui/QApplication>
-#include "main_window.h"
+#ifndef NSRL_H
+#define NSRL_H
 
-int main(int argc, char *argv[])
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+
+#include "databases/generic_database.h"
+
+class NSRL : public Generic_Database
 {
-	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
-	QCoreApplication::setApplicationName("Qt-Console");
+	public:
+		NSRL(const h_known_db_config& config);
+		~NSRL();
 
-	zmq::context_t zmq_context(1);
-	QApplication a(argc, argv);
+		bool is_known(const struct_file& file);
 
-	Main_Window w((void*)&zmq_context);
-	w.show();
+	private:
+		QSqlDatabase	db;
+};
 
-	return a.exec();
-}
-
+#endif // NSRL_H

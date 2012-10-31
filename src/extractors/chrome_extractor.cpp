@@ -26,7 +26,7 @@
  */
 
 #include "extractors/chrome_extractor.h"
-
+/*
 Chrome_Extractor::Chrome_Extractor(
 		void*			z_context,
 		web_browser_models*	models
@@ -36,7 +36,7 @@ Chrome_Extractor::Chrome_Extractor(
 			)
 {
 }
-
+*/
 Chrome_Extractor::Chrome_Extractor(
 		void*		z_context,
 		Database*	db

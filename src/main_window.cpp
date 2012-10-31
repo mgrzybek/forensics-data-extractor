@@ -79,14 +79,20 @@ Main_Window::~Main_Window() {
 	 */
 	delete ui;
 
-	if ( web_models.places != NULL )
+	if ( web_models.places != NULL ) {
+		web_models.places->clear();
 		delete web_models.places;
+	}
 
-	if ( model_indexed_files != NULL )
+	if ( model_indexed_files != NULL ) {
+		model_indexed_files->clear();
 		delete model_indexed_files;
+	}
 
-	if ( model_analysed_files != NULL )
+	if ( model_analysed_files != NULL ) {
+		model_analysed_files->clear();
 		delete model_analysed_files;
+	}
 
 //	if ( db != NULL )
 //		delete db;
@@ -436,6 +442,28 @@ void Main_Window::load_settings() {
 
 	settings.endArray();
 	settings.endGroup();
+
+	settings.beginGroup("known_files_databases");
+
+	QStringList	gd_names = settings.childGroups();
+
+	Q_FOREACH(QString gd_name, gd_names) {
+		h_known_db_config	map;
+
+		settings.beginGroup(gd_name);
+
+		QStringList keys = settings.childKeys();
+		Q_FOREACH(QString key, keys) {
+			map[key] = settings.value(key).toString();
+		}
+
+		if ( gd_name == "nsrl" )
+			known_files_databases.append(new NSRL(map));
+
+		settings.endGroup();
+	}
+
+	settings.endGroup();
 }
 
 void Main_Window::save_settings() {
@@ -475,7 +503,6 @@ void Main_Window::on_index_button_clicked() {
 	ui->index_button->setEnabled(true);
 }
 
-
 void Main_Window::on_action_Save_Analysis_triggered() {
 	/*
 	QString db_analysis = working_directory + "/analysis.db";
@@ -492,4 +519,3 @@ void Main_Window::on_action_Save_Analysis_triggered() {
 	SQLITE_CLOSE(db_analysis);
 	*/
 }
-

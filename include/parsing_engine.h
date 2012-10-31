@@ -41,10 +41,13 @@
 #include <QString>
 #include <QDebug>
 #include <QFile>
+#include <QList>
 #include <QDir>
 
-#include "include/database.h"
-#include "include/checksum.h"
+#include "common.h"
+#include "database.h"
+#include "checksum.h"
+#include "databases/generic_database.h"
 
 class Parsing_Engine : public QThread
 {
@@ -101,6 +104,7 @@ class Parsing_Engine : public QThread
 		// Files data
 		QString			root_path;
 		Database*		database;
+		generic_database_list*	known_files_dbs;
 //		magichandle_t*	magic_object;
 
 		Exception		e;
@@ -124,6 +128,17 @@ class Parsing_Engine : public QThread
 		 *
 		 */
 		void	send_zmq(const std::string& message, zmq::socket_t& socket);
+
+		/*
+		 * is_known
+		 *
+		 * Uses the known_files_databases list to answer the question:
+		 * -> is this file known?
+		 *
+		 * @arg		: the file to check
+		 * @return	: true (yes)
+		 */
+		bool	is_known(const struct_file& file);
 };
 
 #endif // PARSING_ENGINE_H

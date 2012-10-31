@@ -45,6 +45,7 @@ class Checksum
 
 	private:
 		struct_file*	file;
+		Exception		e;
 };
 
 #endif // CHECKSUM_H

@@ -138,18 +138,49 @@ bool	Database::atomic_exec(const QString& query) {
 }
 
 bool	Database::insert_file(const struct_file& file) {
-	QString	query = "INSERT INTO parsed_file (file, md5, sha1) VALUES ('";
+	QString	query = "INSERT OR IGNORE INTO parsed_file (file, md5, sha1) VALUES ('";
 
 	query += file.full_path % "','";
-	query += (char*) file.md5;
+	query += file.md5;
 	query += "','";
-	query += (char*) file.sha1;
+	query += file.sha1;
 	query += "');";
 
-	printf("sha1: %s and md5: %s\n", file.sha1, file.md5);
+	qDebug() << "sha1 is: " << file.sha1 << " and md5 is: " << file.md5;
+
 	return exec(query);
 }
 
-bool	Database::is_known_file(const struct_file& f) {
+bool	Database::is_analysed_file(const struct_file& f) {
+	QString		query;
+	QSqlQuery	q(analysis_db);
 
+	query = "SELECT COUNT(*) FROM analysed_file WHERE file = '";
+	query += f.full_path;
+	query += "';";
+	q.exec(query);
+
+	if ( q.next() == true ) {
+		if ( q.value(0).toUInt() > 0 )
+			return true;
+	}
+
+	return false;
+}
+
+bool	Database::is_parsed_file(const struct_file& f) {
+	QString		query;
+	QSqlQuery	q(analysis_db);
+
+	query = "SELECT COUNT(*) FROM parsed_file WHERE file = '";
+	query += f.full_path;
+	query += "';";
+	q.exec(query);
+
+	if ( q.next() == true ) {
+		if ( q.value(0).toUInt() > 0 )
+			return true;
+	}
+
+	return false;
 }

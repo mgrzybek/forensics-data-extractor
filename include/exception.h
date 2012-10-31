@@ -28,12 +28,15 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
-class Exception: public std::exception
+#include <QString>
+#include <QDebug>
+
+class Exception : public std::exception
 {
 	public:
-		//Exception(QString&	method, QString& message);
-		Exception();
-		~Exception();
+		Exception(const QString&	method, const QString& message) throw();
+		Exception() throw();
+		~Exception() throw();
 
 		void	print();
 

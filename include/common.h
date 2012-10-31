@@ -34,8 +34,10 @@
 #include <QStandardItemModel>
 #include <QSqlTableModel>
 #include <QStringList>
+#include <QHash>
 
 #include "exception.h"
+//#include "databases/generic_database.h"
 
 #define SQLITE_OPEN(db_file) \
 	QSqlDatabase db; \
@@ -52,8 +54,10 @@
 
 typedef struct {
 	QString	full_path;
-	uchar	sha1[SHA_DIGEST_LENGTH];
-	uchar	md5[MD5_DIGEST_LENGTH];
+	//char	sha1[SHA_DIGEST_LENGTH];
+	QString	sha1;
+	//char	md5[MD5_DIGEST_LENGTH];
+	QString	md5;
 } struct_file;
 
 typedef struct {
@@ -65,6 +69,9 @@ typedef struct {
 	QSqlTableModel*	signons;
 	QSqlTableModel*	extracted_files;
 } web_browser_models;
+
+typedef QHash<QString, QString>				h_known_db_config;
+typedef QHash<QString, h_known_db_config>	hh_known_db_config;
 
 #endif // COMMON_H
 

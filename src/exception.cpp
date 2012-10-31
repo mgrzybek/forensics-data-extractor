@@ -27,12 +27,15 @@
 
 #include "include/exception.h"
 
-Exception::Exception(QString&	method, QString& message) {
+Exception::Exception() throw() {
+}
+
+Exception::Exception(const QString&	method, const QString& message) throw() {
 	calling_method = method;
 	msg = message;
 }
 
-Exception::~Exception() {
+Exception::~Exception() throw() {
 }
 
 void	Exception::print() {
