@@ -68,7 +68,7 @@ bool	NSRL::is_known(const struct_file& file) {
 	QSqlQuery	query(db);
 	QString		sql = "SELECT COUNT(*) FROM hash WHERE sha1 = '";
 
-	sql += QString((char*)file.sha1);
+	sql += file.sha1;
 	sql += "' LIMIT 1;";
 
 	error.calling_method = "NSRL::is_known";

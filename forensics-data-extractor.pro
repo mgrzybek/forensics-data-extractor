@@ -41,29 +41,29 @@ INCLUDEPATH	+= include
 LIBS		+= -lzmq -lssl -lcrypto
 
 SOURCES		+= src/main.cpp \
-		src/main_window.cpp \
-		src/indexing_engine.cpp \
+		src/gui/main_window.cpp \
+		src/gui/configuration.cpp \
+		src/analysis/indexing_engine.cpp \
 		src/extractors/firefox_extractor.cpp \
 		src/extractors/web_browser_extractor.cpp \
 		src/extractors/chrome_extractor.cpp \
-		src/configuration.cpp \
-		src/parsing_engine.cpp \
-		src/database.cpp \
-		src/checksum.cpp \
+		src/analysis/parsing_engine.cpp \
+		src/analysis/database.cpp \
+		src/analysis/checksum.cpp \
 		src/exception.cpp \
 		src/databases/nsrl.cpp \
 		src/databases/generic_database.cpp
 
-HEADERS		+= include/main_window.h\
+HEADERS		+= include/gui/main_window.h\
+		include/gui/configuration.h \
 		include/common.h \
-		include/indexing_engine.h \
+		include/analysis/indexing_engine.h \
 		include/extractors/firefox_extractor.h \
 		include/extractors/web_browser_extractor.h\
 		include/extractors/chrome_extractor.h \
-		include/configuration.h \
-		include/parsing_engine.h \
-		include/database.h \
-		include/checksum.h \
+		include/analysis/parsing_engine.h \
+		include/analysis/database.h \
+		include/analysis/checksum.h \
 		include/exception.h \
 		include/databases/nsrl.h \
 		include/databases/generic_database.h

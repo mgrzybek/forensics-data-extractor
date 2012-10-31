@@ -1,7 +1,7 @@
 /**
  * Project: forensics-data-extractor
- * File name: main.cpp
- * Description: the main function of the program
+ * File name: indexing_engine.h
+ * Description: describes the indexing engine that lists and processes the files
  *
  * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
@@ -25,20 +25,40 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include <QtGui/QApplication>
-#include "gui/main_window.h"
+#ifndef INDEXING_ENGINE_H
+#define INDEXING_ENGINE_H
 
-int main(int argc, char *argv[])
+//#include <magic.h>
+#include <zmq.hpp>
+
+#include <QStandardItemModel>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QTextEdit>
+#include <QDateTime>
+#include <QProcess>
+#include <QThread>
+#include <QString>
+#include <QDebug>
+#include <QFile>
+#include <QDir>
+
+// TODO: do we really need a QThread object here?
+class Indexing_Engine : public QThread
 {
-	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
-	QCoreApplication::setApplicationName("Qt-Console");
+	public:
+		Indexing_Engine(const QString& e_path, const QString& w_directory);
+		void	run();
 
-	zmq::context_t zmq_context(1);
-	QApplication a(argc, argv);
+		void	add_indexed_folders(const QStringList& folders);
 
-	Main_Window w((void*)&zmq_context);
-	w.show();
+	private:
+		QString		engine_path;
+		QString		working_directory;
+		QStringList	indexed_folders;
 
-	return a.exec();
-}
+		bool	create_conf_file();
+};
+
+#endif // SEARCH_ENGINE_H
 

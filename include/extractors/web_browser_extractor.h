@@ -41,7 +41,7 @@
 #include <zmq.hpp>
 
 #include "../common.h"
-#include "../database.h"
+#include "../analysis/database.h"
 
 class Web_Browser_Extractor : public QThread
 {
