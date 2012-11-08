@@ -28,11 +28,10 @@
 #ifndef CHECKSUM_H
 #define CHECKSUM_H
 
+#include <QFile>
 #include <QDebug>
 #include <QString>
 #include <QByteArray>
-
-#include <stdio.h>
 
 #include "common.h"
 

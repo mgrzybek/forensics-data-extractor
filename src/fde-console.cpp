@@ -1,7 +1,7 @@
 /**
  * Project: forensics-data-extractor
- * File name: main.cpp
- * Description: the main function of the program
+ * File name: fde-console.cpp
+ * Description: the main function of the GUI console
  *
  * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.

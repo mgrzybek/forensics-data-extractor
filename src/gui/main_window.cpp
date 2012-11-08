@@ -35,10 +35,10 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 	zmq_context = (zmq::context_t*) z_context;
 
 	db = NULL;
-	chrome_engine = NULL;
-	firefox_engine = NULL;
 	search_engine = NULL;
 	index_engine = NULL;
+	receiver = NULL;
+	worker = NULL;
 
 	ui->setupUi(this);
 
@@ -47,6 +47,8 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 
 	scan_in_progress = false;
 	index_in_progress = false;
+
+	load_settings();
 }
 
 Main_Window::~Main_Window() {
@@ -54,15 +56,8 @@ Main_Window::~Main_Window() {
 	 * The threads should be stopped before deleting to avoid segfault
 	 */
 	// TODO: print a message to tell that the software is waiting for the threads to end
-	if ( chrome_engine != NULL ) {
-		chrome_engine->wait();
-		delete chrome_engine;
-	}
 
-	if ( firefox_engine != NULL ) {
-		firefox_engine->wait();
-		delete firefox_engine;
-	}
+	emit stop();
 
 	if ( search_engine != NULL ) {
 		search_engine->wait();
@@ -73,6 +68,12 @@ Main_Window::~Main_Window() {
 		index_engine->wait();
 		delete index_engine;
 	}
+
+	if ( receiver != NULL )
+		delete receiver;
+
+	if ( worker != NULL )
+		delete worker;
 
 	/*
 	 * We should delete the tableview after the models
@@ -96,6 +97,9 @@ Main_Window::~Main_Window() {
 
 //	if ( db != NULL )
 //		delete db;
+
+	if ( known_files_databases.isEmpty() == false )
+		known_files_databases.clear();
 }
 
 void Main_Window::on_browse_button_clicked() {
@@ -175,38 +179,38 @@ void Main_Window::update_info() {
 	}
 }
 
-void Main_Window::launch_extractors() {
-	chrome_engine->start();
-	firefox_engine->start();
-}
-
-
 void Main_Window::process_scan() {
-	if ( ui->directory_line->text().isEmpty() == true ) {
+	if ( ui->directory_line->text().isEmpty() == true )
 		return;
+
+	if ( receiver == NULL ) {
+		receiver = new Receiver((void*)zmq_context, db);
+		connect(this, SIGNAL(stop()), receiver, SIGNAL(stop()));
 	}
 
-	search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db);
+	if ( search_engine == NULL ) {
+		search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db, &known_files_databases);
+		connect(this, SIGNAL(stop()), search_engine, SIGNAL(stop()));
+	} else
+		search_engine->set_root_path(ui->directory_line->text());
 
-	chrome_engine = new Chrome_Extractor((void*)zmq_context, db);
-	firefox_engine = new Firefox_Extractor((void*)zmq_context, db);
+	if ( worker == NULL ) {
+		worker = new Worker((void*)zmq_context, ZMQ_INPROC_PARSER_PUSH, ZMQ_INPROC_RECEIVER_PULL);
+		connect(this, SIGNAL(stop()), worker, SIGNAL(stop()));
+	}
 
 	/*
 	 * Clean the models to prevent duplicates
 	 */
 	clean_models();
-	connect(search_engine, SIGNAL(ready()), this, SLOT(launch_extractors()));
-	connect(search_engine, SIGNAL(finished()), this, SLOT(update_info()));
-
-	connect(chrome_engine, SIGNAL(finished()), this, SLOT(update_info()));
-	connect(firefox_engine, SIGNAL(finished()), this, SLOT(update_info()));
 
 	/*
 	 * Searching process
 	 */
+	receiver->start();
+	worker->start();
 	search_engine->start();
 }
-
 
 void Main_Window::process_index() {
 	QStringList folders;
@@ -239,6 +243,14 @@ void Main_Window::init_models(QSqlDatabase& db) {
 	model_analysed_files->setSort(1, Qt::DescendingOrder);
 	model_analysed_files->select();
 	model_analysed_files->setHeaderData(0, Qt::Horizontal, tr("File"));
+
+	model_known_files = new QSqlTableModel(0, db);
+	model_known_files->setTable("known_file");
+	model_known_files->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	model_known_files->setSort(1, Qt::AscendingOrder);
+	model_known_files->select();
+	model_known_files->setHeaderData(0, Qt::Horizontal, tr("File"));
+	model_known_files->setHeaderData(1, Qt::Horizontal, tr("Database"));
 
 	web_models.places = new QSqlTableModel(0, db);
 	web_models.places->setTable("place");
@@ -370,7 +382,7 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 		return;
 
 	QFileInfo	project_file(buffer_file);
-	working_directory = project_file.absoluteDir().absolutePath();
+	working_directory = project_file.absoluteFilePath();
 	db_file += working_directory + "/analysis.db";
 
 	try {
@@ -390,6 +402,7 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 	ui->tab_results->setVisible(true);
 
 	init_models(*db->get_analysis_db());
+	update_info();
 }
 
 void Main_Window::on_action_Close_Analysis_triggered() {
@@ -400,6 +413,7 @@ void Main_Window::on_action_Close_Analysis_triggered() {
 
 	ui->tab_results->setVisible(false);
 
+	// TODO: stop the threads
 	// TODO: save the results : analyse's parameters
 	// TODO: destroy the objects
 	if ( db != NULL ) {
@@ -457,8 +471,12 @@ void Main_Window::load_settings() {
 			map[key] = settings.value(key).toString();
 		}
 
-		if ( gd_name == "nsrl" )
-			known_files_databases.append(new NSRL(map));
+		if ( gd_name == "nsrl" ) {
+			if ( keys.contains("nsrl") == true )
+				known_files_databases["nsrl"]->update_connection_info(map);
+			else
+				known_files_databases["nsrl"] = new NSRL(map);
+		}
 
 		settings.endGroup();
 	}

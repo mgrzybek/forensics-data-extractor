@@ -52,12 +52,28 @@
 #define SQLITE_CLOSE(db_file) \
 	QSqlDatabase::removeDatabase(db_file);
 
+#ifdef WINDOWS_OS
+#define ZMQ_INPROC_PARSER_PUSH	"tcp://127.0.0.1:5555"
+//#define ZMQ_INPROC_WORKER_PUSH	"tcp://127.0.0.1:5556"
+#define	ZMQ_INPROC_RECEIVER_PULL	"tcp://127.0.0.1:5557"
+#else
+#define ZMQ_INPROC_PARSER_PUSH	"inproc://push-parser.inproc"
+//#define ZMQ_INPROC_WORKER_PUSH	"inproc://push-worker.inproc"
+#define	ZMQ_INPROC_RECEIVER_PULL	"inproc://pull-receiver.inproc"
+#endif
+
+#define	ZMQ_QUERIES_SEPARATOR	"|"
+
+typedef	QList<QRegExp>	regex_list;
+typedef	QHash<QString, regex_list>	h_dico;
+
 typedef struct {
+	QString	name;
 	QString	full_path;
-	//char	sha1[SHA_DIGEST_LENGTH];
 	QString	sha1;
-	//char	md5[MD5_DIGEST_LENGTH];
 	QString	md5;
+	QString	extractor;
+	QString	node;
 } struct_file;
 
 typedef struct {

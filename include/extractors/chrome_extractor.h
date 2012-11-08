@@ -30,24 +30,23 @@
 
 #include "web_browser_extractor.h"
 
-
 class Chrome_Extractor : public Web_Browser_Extractor
 {
 	public:
-		Chrome_Extractor(void* z_context, web_browser_models* models);
-		Chrome_Extractor(void* z_context, Database* db);
+		Chrome_Extractor(void* z_context, const std::string& z_output_uri, const QString& file_path);
 
 		~Chrome_Extractor();
 
-		virtual void	files_filter(const QString& file_path);
+		virtual void	files_filter();
+		static regex_list	get_regexes();
 
 	private:
-		void	extract_places(const QString& file);
-		void	extract_cookies(const QString& file);
-		void	extract_downloads(const QString& file);
-		void	extract_forms(const QString& file);
-		void	extract_search(const QString& file);
-		void	extract_signons(const QString& file);
+		void	extract_places();
+		void	extract_cookies();
+		void	extract_downloads();
+		void	extract_forms();
+		void	extract_search();
+		void	extract_signons();
 };
 
 #endif // CHROME_EXTRACTOR_H

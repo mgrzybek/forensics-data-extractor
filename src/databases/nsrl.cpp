@@ -28,7 +28,66 @@
 #include "databases/nsrl.h"
 
 NSRL::NSRL(const h_known_db_config& config) {
-	error.calling_method = "NSRL::NSRL";
+	update_connection_info(config);
+	name = "NSRL";
+}
+
+NSRL::~NSRL() {
+	db.close();
+	QSqlDatabase::removeDatabase("nsrl");
+}
+
+bool	NSRL::is_known(const struct_file& file) {
+	error.calling_method = "NSRL::is_known";
+
+	if ( db.isOpen() == false )
+		if ( db.open() == false ) {
+			error.msg = "Cannot open the database connection: ";
+			error.msg += db.lastError().text();
+			throw error;
+		}
+
+	QSqlQuery	query(db);
+	QString		sql = "SELECT COUNT(*) FROM hash WHERE sha1 = '";
+
+	sql += file.sha1.toUpper();
+	sql += "' LIMIT 1;";
+
+	if ( query.exec(sql) == false ) {
+		error.msg = "Cannot exec the query: ";
+		error.msg += query.lastError().text();
+		throw error;
+	}
+
+	if ( query.next() == true) {
+		if ( query.value(0).toInt() > 0 )
+			return true;
+		else
+			return false;
+	} else {
+		error.msg = "No returned data from the query: ";
+		error.msg += sql;
+		throw error;
+	}
+
+	// We should never arrive here
+	return false;
+}
+
+bool	NSRL::update_connection_info(const h_known_db_config& config) {
+	error.calling_method = "NSRL::update_connection_info";
+
+	if ( db.isOpen() ) {
+		db.close();
+		QSqlDatabase::removeDatabase("nsrl");
+	}
+
+	if ( config.contains("driver") == false ) {
+		error.msg = "Cannot fint the driver to use";
+		throw error;
+	}
+
+	db = QSqlDatabase::addDatabase(config.value("driver"), "nsrl");
 
 	if ( config.contains("hostname") == false ) {
 		error.msg = "Cannot find the hostname";
@@ -51,45 +110,5 @@ NSRL::NSRL(const h_known_db_config& config) {
 	if ( config.contains("password") == true )
 		db.setPassword(config.value("password"));
 
-	if ( config.contains("driver") == false ) {
-		error.msg = "Cannot fint the driver to use";
-		throw error;
-	}
-
-	db = QSqlDatabase::addDatabase(config.value("driver"), "nsrl");
-}
-
-NSRL::~NSRL() {
-	db.close();
-	QSqlDatabase::removeDatabase("nsrl");
-}
-
-bool	NSRL::is_known(const struct_file& file) {
-	QSqlQuery	query(db);
-	QString		sql = "SELECT COUNT(*) FROM hash WHERE sha1 = '";
-
-	sql += file.sha1;
-	sql += "' LIMIT 1;";
-
-	error.calling_method = "NSRL::is_known";
-
-	if ( query.exec(sql) == false ) {
-		error.msg = "Cannot exec the query: ";
-		error.msg += query.lastError().text();
-		throw error;
-	}
-
-	if ( query.next() == true) {
-		if ( query.value(0).toInt() > 0 )
-			return true;
-		else
-			return false;
-	} else {
-		error.msg = "No returned data from the query: ";
-		error.msg += sql;
-		throw error;
-	}
-
-	// We should never arrive here
-	return false;
+	return true;
 }

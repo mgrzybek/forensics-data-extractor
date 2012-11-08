@@ -33,23 +33,21 @@
 class Firefox_Extractor : public Web_Browser_Extractor
 {
 	public:
-		Firefox_Extractor(void* z_context, web_browser_models* models);
-		Firefox_Extractor(void* z_context, Database* db);
+		Firefox_Extractor(void* z_context, const std::string& z_output_uri, const QString& file_path);
 
 		~Firefox_Extractor();
 
-		virtual void	files_filter(const QString& file_path);
-
-		// TODO: think of scanning RDF files
-		void	extract_places(const QString& file);
-		void	extract_cookies(const QString& file);
-		void	extract_downloads(const QString& file);
-		void	extract_forms(const QString& file);
-		void	extract_search(const QString& file);
-		void	extract_signons(const QString& file);
+		virtual void	files_filter();
+		static regex_list	get_regexes();
 
 	private:
-//		void	search_files(const QString& dir_path);
+		// TODO: think of scanning RDF files
+		void	extract_places();
+		void	extract_cookies();
+		void	extract_downloads();
+		void	extract_forms();
+		void	extract_search();
+		void	extract_signons();
 };
 
 #endif // FIREFOX_EXTRACTOR_H

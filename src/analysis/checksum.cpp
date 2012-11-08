@@ -46,8 +46,12 @@ bool	Checksum::process_all() {
 	uchar	sha1[SHA_DIGEST_LENGTH];
 	uchar	md5[MD5_DIGEST_LENGTH];
 
-	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
-	char	buffer;
+	QFile	q_file(file->full_path);
+	if ( q_file.open(QIODevice::ReadOnly) == false ) {
+		qCritical() << "Cannot open " << file->full_path;
+		return false;
+	}
+	FILE*	opened_file = fdopen(q_file.handle(), "rb");
 	int	bytes;
 
 	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
@@ -57,6 +61,7 @@ bool	Checksum::process_all() {
 
 	if ( opened_file == NULL ) {
 		qCritical() << "Cannot open " << file->full_path << " for sha1";
+		perror(NULL);
 		return false;
 	}
 
@@ -76,16 +81,17 @@ bool	Checksum::process_all() {
 	}
 
 	file->sha1.clear();
-	for (int i = 0 ; i < SHA_DIGEST_LENGTH / 2 ; ++i) {
-		sprintf(&buffer, "%02x", sha1[i]);
-		file->sha1.append(buffer);
+	for (int i = 0 ; i < SHA_DIGEST_LENGTH ; ++i) {
+		file->sha1.append(QString::number(sha1[i], 16));
 	}
 
 	file->md5.clear();
-	for (int i = 0 ; i < MD5_DIGEST_LENGTH / 2 ; ++i) {
-		sprintf(&buffer, "%02x", md5[i]);
-		file->md5.append(buffer);
+	for (int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i) {
+		file->md5.append(QString::number(md5[i], 16));
 	}
+
+	fclose(opened_file);
+	q_file.close();
 
 	return true;
 }

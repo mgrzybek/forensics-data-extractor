@@ -233,7 +233,7 @@
         <item row="7" column="0" colspan="4">
          <widget class="QTabWidget" name="tab_processing">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_indexing">
            <attribute name="title">
@@ -256,6 +256,16 @@
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
              <widget class="QTableView" name="extracted_list"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_known_files">
+           <attribute name="title">
+            <string>Fichiers connus</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <widget class="QTableView" name="known_list"/>
             </item>
            </layout>
           </widget>
@@ -306,7 +316,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
+             <width>93</width>
              <height>93</height>
             </rect>
            </property>
@@ -331,7 +341,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
+             <width>93</width>
              <height>93</height>
             </rect>
            </property>
@@ -356,7 +366,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
+             <width>93</width>
              <height>93</height>
             </rect>
            </property>
@@ -381,7 +391,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
+             <width>93</width>
              <height>93</height>
             </rect>
            </property>
@@ -406,7 +416,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
+             <width>93</width>
              <height>93</height>
             </rect>
            </property>

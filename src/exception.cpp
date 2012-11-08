@@ -25,7 +25,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "include/exception.h"
+#include "exception.h"
 
 Exception::Exception() throw() {
 }
@@ -40,4 +40,8 @@ Exception::~Exception() throw() {
 
 void	Exception::print() {
 	qCritical() << calling_method << ": " << msg;
+}
+
+const char* Exception::what() const throw() {
+	return msg.toAscii().constData();
 }

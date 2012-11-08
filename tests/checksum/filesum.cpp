@@ -21,6 +21,7 @@ int	main(int argc, char* argv[]) {
 			std::cout << file.sha1.toStdString() << " " << file.md5.toStdString() << " " << file.full_path.toStdString() << std::endl;
 		} catch (const Exception& e) {
 			qCritical() << e.calling_method << ": " << e.msg;
+			return EXIT_FAILURE;
 		}
 	}
 

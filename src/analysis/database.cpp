@@ -1,3 +1,30 @@
+/**
+ * Project: forensics-data-extractor
+ * File name: database.cpp
+ * Description: describes the object creating the analysis database
+ *
+ * @author Mathieu Grzybek on 2012-05-20
+ * @copyright 2012 Mathieu Grzybek. All rights reserved.
+ * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
+ *
+ * @see The GNU Public License (GPL) version 3 or higher
+ *
+ *
+ * forensics-data-extractor is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #include "analysis/database.h"
 
 Database::Database(const QString& analysis_db_file) {
@@ -96,21 +123,27 @@ QSqlDatabase*	Database::get_analysis_db() {
 }
 
 uint	Database::get_row_count(const QString& table_name) {
+	analysis_mutex.lock();
+
 	QString		query;
 	QSqlQuery	q(analysis_db);
+	uint		result = 0;
 
 	query = "SELECT COUNT(*) FROM " % table_name % " LIMIT 1;";
 	q.exec(query);
 
 	if ( q.next() == true )
-		return q.value(0).toUInt();
+		result = q.value(0).toUInt();
 
-	return 0;
+	analysis_mutex.unlock();
+
+	return result;
 }
 
 bool	Database::init_schema() {
 	QStringList	queries;
 
+	// Web browsing
 	queries << "CREATE TABLE IF NOT EXISTS place (site TEXT PRIMARY KEY, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS cookie (name TEXT PRIMARY KEY, value TEXT NOT NULL, host TEXT NOT NULL, path TEXT NOT NULL, expiration TEXT NOT NULL, secured TEXT NOT NULL, http TEXT NOT NULL, last_accessed TEXT NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS download (name TEXT PRIMARY KEY, source TEXT NOT NULL, mime TEXT NOT NULL);";
@@ -118,9 +151,14 @@ bool	Database::init_schema() {
 	//queries << "CREATE TABLE IF NOT EXISTS search (name TEXT PRIMARY KEY, value TEXT UNIQUE NOT NULL, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS search (name TEXT PRIMARY KEY, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS signon (host TEXT PRIMARY KEY, id TEXT NOT NULL, password TEXT NOT NULL );";
-	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0');";
+
+	// Files
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL);";
 
 	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
+	queries << "CREATE VIEW IF NOT EXISTS not_analysed_file AS SELECT file FROM parsed_file WHERE analysed = 0";
+
+	queries << "CREATE VIEW IF NOT EXISTS known_file AS SELECT file,known FROM parsed_file WHERE known NOT NULL ORDER BY known,file ASC";
 
 	return exec(queries);
 }
@@ -133,7 +171,7 @@ bool	Database::atomic_exec(const QString& query) {
 		return false;
 	}
 
-	qDebug() << "query OK: " << query;
+//	qDebug() << "query OK: " << query;
 	return true;
 }
 
@@ -145,8 +183,6 @@ bool	Database::insert_file(const struct_file& file) {
 	query += "','";
 	query += file.sha1;
 	query += "');";
-
-	qDebug() << "sha1 is: " << file.sha1 << " and md5 is: " << file.md5;
 
 	return exec(query);
 }

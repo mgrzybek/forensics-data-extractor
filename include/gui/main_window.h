@@ -40,13 +40,16 @@
 #include <QSortFilterProxyModel>
 
 #include "common.h"
-#include "analysis/database.h"
+
 #include "gui/configuration.h"
-#include "extractors/firefox_extractor.h"
-#include "extractors/chrome_extractor.h"
+
+#include "analysis/database.h"
 #include "analysis/indexing_engine.h"
 #include "analysis/parsing_engine.h"
-#include "configuration.h"
+#include "analysis/receiver.h"
+
+#include "extractors/worker.h"
+
 #include "databases/generic_database.h"
 #include "databases/nsrl.h"
 
@@ -64,12 +67,14 @@ class Main_Window : public QMainWindow
 
 		zmq::context_t*	zmq_context;
 
+	signals:
+		void	stop();
+
 	private slots:
 		void	on_browse_button_clicked();
 		void	on_scan_button_clicked();
 
 		void	update_info();
-		void	launch_extractors();
 
 		void	on_action_New_Analysis_triggered();
 		void	on_action_Quit_triggered();
@@ -98,6 +103,8 @@ class Main_Window : public QMainWindow
 		QSqlTableModel*		model_indexed_files;
 		// extracted files
 		QSqlTableModel*		model_analysed_files;
+		// known files
+		QSqlTableModel*		model_known_files;
 
 		/*
 		 * Working files
@@ -110,8 +117,8 @@ class Main_Window : public QMainWindow
 		 */
 		generic_database_list	known_files_databases;
 		Parsing_Engine*		search_engine;
-		Firefox_Extractor*	firefox_engine;
-		Chrome_Extractor*	chrome_engine;
+		Worker*				worker;
+		Receiver*			receiver;
 
 		Indexing_Engine*	index_engine;
 
