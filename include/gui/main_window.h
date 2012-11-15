@@ -86,6 +86,9 @@ class Main_Window : public QMainWindow
 
 		void	on_action_Save_Analysis_triggered();
 
+	public slots:
+		void	refresh_models();
+
 	private:
 		/*
 		 * GUI Stuff

@@ -120,14 +120,14 @@ void Chrome_Extractor::extract_cookies() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
-			insert_query += "'" % query.value(0).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(1).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(2).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(3).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(4).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(5).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(6).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(7).toString().replace("'","\'");
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(3).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(4).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(5).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(6).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(7).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -150,9 +150,9 @@ void Chrome_Extractor::extract_downloads() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -175,9 +175,9 @@ void Chrome_Extractor::extract_forms() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO form (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -197,7 +197,7 @@ void Chrome_Extractor::extract_search() {
 		query.exec("SELECT term, COUNT(*) FROM keyword_search_terms GROUP BY term;");
 
 		while (query.next()) {
-			update_map(keyword_map, query.value(0).toString().replace("'","''"), query.value(1).toUInt());
+			update_map(keyword_map, query.value(0).toString(), query.value(1).toUInt());
 		}
 
 		query.clear();
@@ -216,9 +216,9 @@ void Chrome_Extractor::extract_signons() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);

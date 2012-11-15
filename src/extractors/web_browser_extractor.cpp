@@ -46,6 +46,7 @@ void Web_Browser_Extractor::run()
 	update_db_places();
 	update_db_search();
 	qDebug() << "Web_Browser_Extrator: thread end";
+//	emit refresh_models();
 }
 
 void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& key, const uint& value) {
@@ -69,7 +70,7 @@ void	Web_Browser_Extractor::update_db_places() {
 	for ( QMap<QString, uint>::const_iterator iter = url_map.begin() ; iter != url_map.end() ; iter++ ) {
 		QString	query;
 
-		query = "INSERT OR IGNORE INTO place (site, hits) VALUES ('" % iter.key() % "',0);";
+		query = "INSERT OR IGNORE INTO place (site, hits) VALUES ('" % QString(iter.key()).replace("'", "\'") % "',0);";
 		queries += query;
 		queries += ZMQ_QUERIES_SEPARATOR;
 
@@ -94,7 +95,7 @@ void	Web_Browser_Extractor::update_db_search() {
 	for ( QMap<QString, uint>::const_iterator iter = keyword_map.begin() ; iter != keyword_map.end() ; iter++ ) {
 		QString	query;
 
-		query = "INSERT OR IGNORE INTO search (name, hits) VALUES ('" % iter.key() % "',0);";
+		query = "INSERT OR IGNORE INTO search (name, hits) VALUES ('" % QString(iter.key()).replace("'", "\'") % "',0);";
 		queries += query;
 		queries += ZMQ_QUERIES_SEPARATOR;
 

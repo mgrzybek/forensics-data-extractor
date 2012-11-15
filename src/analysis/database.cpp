@@ -171,14 +171,14 @@ bool	Database::atomic_exec(const QString& query) {
 		return false;
 	}
 
-//	qDebug() << "query OK: " << query;
+	qDebug() << "query OK: " << query;
 	return true;
 }
 
 bool	Database::insert_file(const struct_file& file) {
 	QString	query = "INSERT OR IGNORE INTO parsed_file (file, md5, sha1) VALUES ('";
 
-	query += file.full_path % "','";
+	query += analysis_db.driver()->formatValue(file.full_path) % "','";
 	query += file.md5;
 	query += "','";
 	query += file.sha1;

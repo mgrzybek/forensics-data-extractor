@@ -55,7 +55,6 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 //	if ( magic_object == NULL )
 //		qCritical() << "Cannot init the magic library";
 
-	connect(this, SIGNAL(stop()), this, SLOT(stop()));
 	continue_scan = true;
 }
 

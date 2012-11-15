@@ -33,7 +33,7 @@ Worker::~Worker() {
 
 void	Worker::run() {
 	zmq::socket_t	z_input(*zmq_context, ZMQ_PULL);
-	bool	connected = false;
+	bool		connected = false;
 
 	error.calling_method = "Worker::run";
 
@@ -69,7 +69,13 @@ void	Worker::run() {
 }
 
 void	Worker::stop() {
+	qDebug() << "Worker::stop()";
 	can_run = false;
+}
+
+void	Worker::refresh_models() {
+	qDebug() << "Worker::refresh_models()";
+	emit refresh_models();
 }
 
 void	Worker::start_class(const QString& header, const QString& file_path) {

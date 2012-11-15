@@ -16,6 +16,8 @@ typedef	QHash<QString, QRunnable*>	h_extractors;
 
 class Worker : public QThread
 {
+	Q_OBJECT
+
 	public:
 		Worker(void* z_context, const std::string& input_uri, const std::string& output_uri);
 		~Worker();
@@ -24,6 +26,7 @@ class Worker : public QThread
 
 	public slots:
 		void	stop();
+		void	refresh_models();
 
 	private:
 		/*

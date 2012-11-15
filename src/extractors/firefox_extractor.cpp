@@ -122,14 +122,14 @@ void Firefox_Extractor::extract_cookies() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString() % "',";
-			insert_query += "'" % query.value(3).toString() % "',";
-			insert_query += "'" % query.value(4).toString() % "',";
-			insert_query += "'" % query.value(5).toString() % "',";
-			insert_query += "'" % query.value(6).toString() % "',";
-			insert_query += "'" % query.value(7).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(3).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(4).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(5).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(6).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(7).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -152,9 +152,9 @@ void Firefox_Extractor::extract_downloads() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -177,9 +177,9 @@ void Firefox_Extractor::extract_forms() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO form (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -221,9 +221,9 @@ void Firefox_Extractor::extract_signons() {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
 			send_zmq(insert_query);

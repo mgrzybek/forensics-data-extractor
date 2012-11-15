@@ -69,11 +69,15 @@ Main_Window::~Main_Window() {
 		delete index_engine;
 	}
 
-	if ( receiver != NULL )
+	if ( receiver != NULL ) {
+		receiver->wait();
 		delete receiver;
+	}
 
-	if ( worker != NULL )
+	if ( worker != NULL ) {
+		worker->wait();
 		delete worker;
+	}
 
 	/*
 	 * We should delete the tableview after the models
@@ -185,18 +189,19 @@ void Main_Window::process_scan() {
 
 	if ( receiver == NULL ) {
 		receiver = new Receiver((void*)zmq_context, db);
-		connect(this, SIGNAL(stop()), receiver, SIGNAL(stop()));
+		connect(this, SIGNAL(stop()), receiver, SLOT(stop()));
 	}
 
 	if ( search_engine == NULL ) {
 		search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db, &known_files_databases);
-		connect(this, SIGNAL(stop()), search_engine, SIGNAL(stop()));
+		connect(this, SIGNAL(stop()), search_engine, SLOT(stop()));
 	} else
 		search_engine->set_root_path(ui->directory_line->text());
 
 	if ( worker == NULL ) {
 		worker = new Worker((void*)zmq_context, ZMQ_INPROC_PARSER_PUSH, ZMQ_INPROC_RECEIVER_PULL);
-		connect(this, SIGNAL(stop()), worker, SIGNAL(stop()));
+		connect(this, SIGNAL(stop()), worker, SLOT(stop()));
+		connect(worker, SIGNAL(refresh_models()), this, SLOT(refresh_models()));
 	}
 
 	/*
@@ -406,6 +411,8 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 }
 
 void Main_Window::on_action_Close_Analysis_triggered() {
+	emit stop();
+
 	ui->action_Close_Analysis->setDisabled(true);
 	ui->action_New_Analysis->setEnabled(true);
 	ui->action_Open_Analysis->setEnabled(true);
@@ -432,6 +439,11 @@ bool Main_Window::open_analysis_db(const QString& db_file) {
 
 bool Main_Window::save_analysis_db(QSqlQuery& query) {
 	return true;
+}
+
+void Main_Window::refresh_models() {
+	qDebug() << "Main_Window::refresh_models()";
+	update_info();
 }
 
 void Main_Window::load_settings() {

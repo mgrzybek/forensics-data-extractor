@@ -2,6 +2,8 @@
 #define GENERIC_EXTRACTOR_H
 
 #include <QRunnable>
+#include <QSqlField>
+#include <QSqlDriver>
 
 #include <string>
 #include <zmq.hpp>
@@ -10,11 +12,16 @@
 
 class Generic_Extractor : public QRunnable
 {
+//	Q_OBJECT
+
 	public:
 		Generic_Extractor(void* z_context, const std::string& z_output_uri, const QString& file_path);
 
-		virtual void	run() = 0;
+		virtual void		run() = 0;
 		static regex_list	get_regexes();
+
+//	signals:
+//		void	finished();
 
 	protected:
 		zmq::context_t*	zmq_context;

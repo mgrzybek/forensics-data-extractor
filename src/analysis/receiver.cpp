@@ -60,5 +60,6 @@ void	Receiver::run() {
 }
 
 void	Receiver::stop() {
+	qDebug() << "Receiver::stop()";
 	can_run = false;
 }

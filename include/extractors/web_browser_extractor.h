@@ -80,6 +80,9 @@ class Web_Browser_Extractor : public Generic_Extractor
 		virtual void	extract_search() = 0;
 		virtual void	extract_signons() = 0;
 
+//	signals:
+//		void	refresh_models();
+
 	protected:
 		QString				dir_path;
 

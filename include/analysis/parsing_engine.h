@@ -92,7 +92,7 @@ class Parsing_Engine : public QThread
 	signals:
 		void	ready();
 
-	private slots:
+	public slots:
 		void	stop();
 
 	private:

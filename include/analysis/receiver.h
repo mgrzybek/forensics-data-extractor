@@ -11,6 +11,8 @@
 
 class Receiver : public QThread
 {
+	Q_OBJECT
+
 	public:
 		Receiver(void* z_context, Database* db);
 		~Receiver();
