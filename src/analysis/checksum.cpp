@@ -76,13 +76,15 @@ bool	Checksum::process_all() {
 	}
 
 	file->sha1.clear();
-	for (int i = 0 ; i < SHA_DIGEST_LENGTH / 2 ; ++i) {
+	//for (int i = 0 ; i < SHA_DIGEST_LENGTH / 2 ; ++i) {
+	for (int i = 0 ; i < SHA_DIGEST_LENGTH ; ++i) {
 		sprintf(&buffer, "%02x", sha1[i]);
 		file->sha1.append(buffer);
 	}
 
 	file->md5.clear();
-	for (int i = 0 ; i < MD5_DIGEST_LENGTH / 2 ; ++i) {
+	//for (int i = 0 ; i < MD5_DIGEST_LENGTH / 2 ; ++i) {
+	for (int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i) {
 		sprintf(&buffer, "%02x", md5[i]);
 		file->md5.append(buffer);
 	}
