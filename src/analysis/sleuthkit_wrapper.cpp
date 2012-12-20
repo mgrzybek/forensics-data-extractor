@@ -178,7 +178,6 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 				// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
 				send_zmq(s_file.full_path.toAscii().constData());
 				database->insert_file(s_file);
-
 			}
 
 			// recurse into another directory (unless it is a '.' or '..')

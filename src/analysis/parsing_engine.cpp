@@ -67,6 +67,7 @@ void Parsing_Engine::run() {
 
 	try {
 		if ( root_path.isEmpty() == false ) {
+			QFileInfo	file_info(root_path);
 			zmq::socket_t socket(*zmq_context, ZMQ_PUSH);
 
 			socket.bind(ZMQ_INPROC_PARSER_PUSH);
@@ -74,9 +75,14 @@ void Parsing_Engine::run() {
 
 			emit ready();
 			// Pause to let the extractors start and connect
-			sleep(1); // TODO: is it really useful ?
 
-			recursive_search(socket, root_path);
+			if ( file_info.isDir() == true ) {
+				File_System_Wrapper	directory_process(database);
+				directory_process.recursive_directories_search(socket, root_path);
+			} else {
+				Sleuthkit_Wrapper	image_process(&socket, database);
+				image_process.image_process(root_path);
+			}
 
 			socket.close();
 		}
@@ -93,58 +99,6 @@ void Parsing_Engine::set_root_path(const QString& dir_path) {
 
 void Parsing_Engine::stop() {
 	continue_scan = false;
-}
-
-void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_path) {
-	QDir		path(dir_path);
-	QStringList	directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden | QDir::NoSymLinks);
-	QStringList	files = path.entryList(QDir::Files | QDir::Hidden);
-
-	Extractor_Select	extractor_selector;
-
-	if ( continue_scan == false )
-		return;
-
-	Q_FOREACH(QString file, files) {
-		struct_file	s_file;
-
-		// We need  to initialize these QString to prevent segfaults in checksum_calculator
-		s_file.sha1 = "";
-		s_file.md5 = "";
-
-		s_file.full_path = dir_path;
-		s_file.full_path += "/";
-		s_file.full_path += file;
-		s_file.name = file;
-
-		if ( database->is_parsed_file(s_file) == false and is_known(s_file) == false ) {
-			//QFileInfo	fs_file(s_file.full_path);
-			Checksum	checksum_calculator(&s_file);
-
-			if ( checksum_calculator.process_all() == true ) {
-				//s_file.name = fs_file.fileName();
-				s_file.extractor = extractor_selector.select(s_file.name);
-				//s_file.node =
-
-				// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-				send_zmq(s_file, socket);
-				s_file.full_path.replace("'","\'");
-				s_file.name.replace("'","\'");
-				database->insert_file(s_file);
-			} else
-				qCritical() << e.calling_method << ": skipping file " << s_file.full_path;
-		}
-	}
-
-	Q_FOREACH(QString dir, directories) {
-		QString abs_path_dir;
-
-		abs_path_dir = dir_path;
-		abs_path_dir += "/";
-		abs_path_dir += dir;
-
-		recursive_search(socket, abs_path_dir);
-	}
 }
 
 void Parsing_Engine::send_zmq(const struct_file& file, zmq::socket_t& socket) {

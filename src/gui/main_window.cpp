@@ -107,11 +107,19 @@ Main_Window::~Main_Window() {
 }
 
 void Main_Window::on_browse_button_clicked() {
-	QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
-	QDir	directory(selected_directory);
+	if ( ui->radio_directory->isChecked() == true ) {
+		QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
+		QDir	directory(selected_directory);
 
-	if ( directory.exists(selected_directory) == true )
-		ui->directory_line->setText(selected_directory);
+		if ( directory.exists(selected_directory) == true )
+			ui->source_line->setText(selected_directory);
+	} else {
+		QString	selected_image = QFileDialog::getOpenFileName(this, tr("Find Files"), "~");
+		QFile	file(selected_image);
+
+		if ( file.exists() == true )
+			ui->source_line->setText(selected_image);
+	}
 }
 
 void Main_Window::on_scan_button_clicked() {
@@ -184,7 +192,7 @@ void Main_Window::update_info() {
 }
 
 void Main_Window::process_scan() {
-	if ( ui->directory_line->text().isEmpty() == true )
+	if ( ui->source_line->text().isEmpty() == true )
 		return;
 
 	if ( receiver == NULL ) {
@@ -193,10 +201,10 @@ void Main_Window::process_scan() {
 	}
 
 	if ( search_engine == NULL ) {
-		search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db, &known_files_databases);
+		search_engine = new Parsing_Engine((void*)zmq_context, ui->source_line->text(), db, &known_files_databases);
 		connect(this, SIGNAL(stop()), search_engine, SLOT(stop()));
 	} else
-		search_engine->set_root_path(ui->directory_line->text());
+		search_engine->set_root_path(ui->source_line->text());
 
 	if ( worker == NULL ) {
 		worker = new Worker((void*)zmq_context, ZMQ_INPROC_PARSER_PUSH, ZMQ_INPROC_RECEIVER_PULL);
@@ -220,12 +228,12 @@ void Main_Window::process_scan() {
 void Main_Window::process_index() {
 	QStringList folders;
 
-	if ( ui->directory_line->text().isEmpty() == true ) {
+	if ( ui->source_line->text().isEmpty() == true ) {
 		qCritical() << "No folder to index!";
 		return;
 	}
 
-	folders << ui->directory_line->text();
+	folders << ui->source_line->text();
 	qDebug() << folders;
 
 	index_engine = new Indexing_Engine(strigi_daemon_path, working_directory);

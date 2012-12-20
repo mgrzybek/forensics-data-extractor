@@ -99,11 +99,7 @@ class Parsing_Engine : public QThread
 		void	ready();
 
 	public slots:
-<<<<<<< HEAD
-		void	stop_scan();
-=======
 		void	stop();
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
 	private:
 		/*
@@ -111,7 +107,7 @@ class Parsing_Engine : public QThread
 		 */
 		// Messaging
 		zmq::context_t*	zmq_context;
-		bool			continue_scan;
+		bool		continue_scan;
 
 		// Files data
 		QString			root_path;
