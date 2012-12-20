@@ -5,3 +5,4 @@ Makefile
 moc*
 ui_*
 forensics-data-extractor.app
+.*
