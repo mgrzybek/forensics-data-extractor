@@ -38,7 +38,7 @@ win32:DEFINES	+= WINDOWS_OS
 win32:LIBS	+= -L../zeromq-2.1/lib32
 win32:INCLUDEPATH	+= ../zeromq-2.1/include
 INCLUDEPATH	+= include
-LIBS		+= -lzmq -lssl -lcrypto
+LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
 
 SOURCES		+= src/main.cpp \
 		src/gui/main_window.cpp \
@@ -52,7 +52,9 @@ SOURCES		+= src/main.cpp \
 		src/analysis/checksum.cpp \
 		src/exception.cpp \
 		src/databases/nsrl.cpp \
-		src/databases/generic_database.cpp
+		src/databases/generic_database.cpp \
+    src/analysis/sleuthkit_wrapper.cpp \
+    src/analysis/file_system_wrapper.cpp
 
 HEADERS		+= include/gui/main_window.h\
 		include/gui/configuration.h \
@@ -66,7 +68,9 @@ HEADERS		+= include/gui/main_window.h\
 		include/analysis/checksum.h \
 		include/exception.h \
 		include/databases/nsrl.h \
-		include/databases/generic_database.h
+		include/databases/generic_database.h \
+    include/analysis/sleuthkit_wrapper.h \
+    include/analysis/file_system_wrapper.h
 
 FORMS	+=	ui/main_window.ui \
 		ui/configuration.ui

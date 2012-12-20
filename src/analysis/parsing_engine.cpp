@@ -28,12 +28,17 @@
 #include "analysis/parsing_engine.h"
 
 Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread() {
+	e.calling_method = "Parsing_Engine";
+
+	if ( z_context == NULL ) {
+		e.msg = "z_context is NULL";
+		throw e;
+	}
+
 	zmq_context = (zmq::context_t*) z_context;
 
 	if ( r_path.isEmpty() == true ) {
-		e.calling_method = "Parsing_Engine";
 		e.msg = "r_path is empty";
-
 		throw e;
 	}
 
@@ -42,9 +47,7 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 //	magic_object = magic_open(MAGIC_CHECK);
 
 	if ( db == NULL ) {
-		e.calling_method = "Parsing_Engine";
 		e.msg = "Databse is NULL";
-
 		throw e;
 	}
 
@@ -66,12 +69,18 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 Parsing_Engine::~Parsing_Engine() {
 }
 
-void Parsing_Engine::run() {
+void	Parsing_Engine::run() {
+	QFileInfo	file_info(root_path);
 	continue_scan = true;
+
+	if ( file_info.exists() == false ) {
+		qCritical() << "Parsing_Engine: " << root_path << " does not exist";
+		return;
+	}
 
 	try {
 		if ( root_path.isEmpty() == false ) {
-			zmq::socket_t socket(*zmq_context, ZMQ_PUB);
+			zmq::socket_t	socket(*zmq_context, ZMQ_PUB);
 #ifdef WINDOWS_OS
 			socket.bind("tcp://127.0.0.1:5555");
 #else
@@ -79,72 +88,36 @@ void Parsing_Engine::run() {
 #endif
 			emit ready();
 			// Pause to let the extractors start and connect
-			wait(1); // TODO: is it really useful ?
 
-			recursive_search(socket, root_path);
+			if ( file_info.isDir() == true ) {
+				File_System_Wrapper	search(database);
+				search.recursive_directories_search(socket, root_path);
+			} else {
+				Sleuthkit_Wrapper	search(&socket, database);
+				search.image_process(root_path);
+			}
 
-			qDebug() << "Parsing finished, sending 'END;' message to subscribers...";
 			send_zmq("END;", socket);
+			// TODO: send a signal
 		}
 	} catch (const std::exception& e) {
 		qCritical() << "Parsing_Engine: " << e.what();
 	}
 }
 
-void Parsing_Engine::set_root_path(const QString& dir_path) {
+void	Parsing_Engine::set_root_path(const QString& dir_path) {
 	root_path = dir_path;
 }
 
-void Parsing_Engine::recursive_search(zmq::socket_t& socket, const QString& dir_path) {
-	QDir		path(dir_path);
-	QStringList	directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden | QDir::NoSymLinks);
-	QStringList	files = path.entryList(QDir::Files | QDir::Hidden);
-
-	if ( continue_scan == false )
-		return;
-
-	Q_FOREACH(QString file, files) {
-		struct_file	s_file;
-
-		// We need  to initialize these QString to prevent segfaults in checksum_calculator
-		s_file.sha1 = "";
-		s_file.md5 = "";
-
-		s_file.full_path = dir_path;
-		s_file.full_path += "/";
-		s_file.full_path += file;
-
-		if ( database->is_parsed_file(s_file) == false ) {
-			Checksum	checksum_calculator(&s_file);
-			checksum_calculator.process_all();
-
-			// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-			send_zmq(s_file.full_path.toAscii().constData(), socket);
-			database->insert_file(s_file);
-		}
-	}
-
-	Q_FOREACH(QString dir, directories) {
-		QString abs_path_dir;
-
-		abs_path_dir = dir_path;
-		abs_path_dir += "/";
-		abs_path_dir += dir;
-
-		recursive_search(socket, abs_path_dir);
-	}
-}
-
-void Parsing_Engine::send_zmq(const std::string& message, zmq::socket_t& socket) {
+void	Parsing_Engine::send_zmq(const std::string& message, zmq::socket_t& socket) {
 	zmq::message_t	z_msg(message.size() + 1);
 	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
 	socket.send(z_msg);
 }
-/*
-   void Parsing_Engine::stop_scan() {
-   continue_scan = false;
-   }
-*/
+
+void	Parsing_Engine::stop_scan() {
+	continue_scan = false;
+}
 
 bool	Parsing_Engine::is_known(const struct_file& file) {
 	Q_FOREACH(Generic_Database* g_db, *known_files_dbs) {

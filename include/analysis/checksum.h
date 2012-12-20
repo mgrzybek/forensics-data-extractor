@@ -39,13 +39,23 @@
 class Checksum
 {
 	public:
-		Checksum(struct_file* f);
+		Checksum();
 
-		bool	process_all();
+		bool	process_all(struct_file* file);
+		bool	init();
+		bool	update(const int& bytes, const uchar data[1024]);
+		bool	update(const int& bytes, const char data);
+		bool	get_final(struct_file* file);
 
 	private:
-		struct_file*	file;
-		Exception		e;
+		Exception	e;
+
+		SHA_CTX	sha1_ctx;
+		MD5_CTX	md5_ctx;
+
+
+		uchar	sha1[SHA_DIGEST_LENGTH];
+		uchar	md5[MD5_DIGEST_LENGTH];
 };
 
 #endif // CHECKSUM_H

@@ -27,31 +27,16 @@
 
 #include "analysis/checksum.h"
 
-Checksum::Checksum(struct_file* f)
-{
-	if ( f == NULL ) {
-		e.calling_method = "Checksum::Checksum";
-		e.msg = "The given argument is NULL";
-		throw e;
-	}
-
-	file = f;
+Checksum::Checksum() {
 }
 
-bool	Checksum::process_all() {
-	SHA_CTX	sha1_ctx;
-	MD5_CTX	md5_ctx;
-
-	uchar	data[1024];
-	uchar	sha1[SHA_DIGEST_LENGTH];
-	uchar	md5[MD5_DIGEST_LENGTH];
-
+bool	Checksum::process_all(struct_file* file) {
 	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
-	char	buffer;
 	int	bytes;
+	uchar	data[1024];
 
-	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
-		qCritical() << "Cannot init hash engines";
+	if ( init() == false ) {
+		fclose(opened_file);
 		return false;
 	}
 
@@ -62,13 +47,46 @@ bool	Checksum::process_all() {
 
 	try {
 		 while ( ( bytes = fread(data, 1, 1024, opened_file) ) != 0 ) {
-			if ( SHA1_Update(&sha1_ctx, data, bytes) == 0 or MD5_Update(&md5_ctx, data, bytes) == 0 ) {
-				qCritical() << "Cannot compute hash for " << file->full_path;
+			if ( update(bytes, data) == false) {
+				fclose(opened_file);
 				return false;
 			}
 		}
 	} catch (const std::exception& e) {
 	}
+
+	fclose(opened_file);
+
+	return get_final(file);
+}
+
+bool	Checksum::init() {
+	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
+		qCritical() << "Cannot init hash engines";
+		return false;
+	}
+	return true;
+}
+
+bool	Checksum::update(const int& bytes, const uchar data[1024]) {
+	if ( SHA1_Update(&sha1_ctx, data, bytes) == 0 or MD5_Update(&md5_ctx, data, bytes) == 0 ) {
+		qCritical() << "Cannot update hash";
+		return false;
+	}
+	return true;
+}
+
+bool	Checksum::update(const int& bytes, const char data) {
+	if ( SHA1_Update(&sha1_ctx, &data, bytes) == 0 or MD5_Update(&md5_ctx, &data, bytes) == 0 ) {
+		qCritical() << "Cannot update hash";
+		return false;
+	}
+	return true;
+}
+
+bool	Checksum::get_final(struct_file* file) {
+	if ( file == NULL )
+		return false;
 
 	if ( SHA1_Final(sha1, &sha1_ctx) == 0 or MD5_Final(md5, &md5_ctx) == 0 ) {
 		// error !
@@ -76,18 +94,13 @@ bool	Checksum::process_all() {
 	}
 
 	file->sha1.clear();
-	//for (int i = 0 ; i < SHA_DIGEST_LENGTH / 2 ; ++i) {
 	for (int i = 0 ; i < SHA_DIGEST_LENGTH ; ++i) {
-		sprintf(&buffer, "%02x", sha1[i]);
-		file->sha1.append(buffer);
+		file->sha1.append(QString::number(sha1[i], 16));
 	}
 
 	file->md5.clear();
-	//for (int i = 0 ; i < MD5_DIGEST_LENGTH / 2 ; ++i) {
 	for (int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i) {
-		sprintf(&buffer, "%02x", md5[i]);
-		file->md5.append(buffer);
+		file->md5.append(QString::number(md5[i], 16));
 	}
-
 	return true;
 }

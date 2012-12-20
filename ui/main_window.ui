@@ -22,59 +22,10 @@
       </property>
       <widget class="QWidget" name="tab_fs">
        <attribute name="title">
-        <string>Sélection du dossier</string>
+        <string>Sélection de la source</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="3">
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>137</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Sélectionnez le dossier personnel de l'utilisateur à scanner</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="4">
-         <widget class="QLineEdit" name="directory_line"/>
-        </item>
-        <item row="3" column="0" colspan="4">
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>793</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>600</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="1" colspan="3">
+        <item row="5" column="1" colspan="3">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="index_button">
@@ -99,19 +50,6 @@
           </item>
          </layout>
         </item>
-        <item row="5" column="2">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>61</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
         <item row="6" column="0" colspan="2">
          <spacer name="horizontalSpacer_3">
           <property name="orientation">
@@ -124,6 +62,35 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item row="5" column="0">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>600</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="4" column="0" colspan="4">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>793</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="3" column="0" colspan="4">
+         <widget class="QLineEdit" name="source_line"/>
         </item>
         <item row="6" column="2" colspan="2">
          <layout class="QFormLayout" name="formLayout">
@@ -261,8 +228,32 @@
           </widget>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QTableView" name="tableView"/>
+        <item row="0" column="1">
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>137</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="radio_image">
+          <property name="text">
+           <string>Sélectionnez l'image à scanner</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="radio_directory">
+          <property name="text">
+           <string>Sélectionnez le dossier personnel de l'utilisateur à scanner</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -281,8 +272,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>796</width>
-             <height>471</height>
+             <width>766</width>
+             <height>415</height>
             </rect>
            </property>
            <attribute name="label">
@@ -306,8 +297,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>93</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">
@@ -331,8 +322,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>93</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">
@@ -356,8 +347,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>93</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">
@@ -381,8 +372,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>93</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">
@@ -406,8 +397,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>93</height>
+             <width>102</width>
+             <height>102</height>
             </rect>
            </property>
            <attribute name="label">

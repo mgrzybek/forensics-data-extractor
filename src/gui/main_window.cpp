@@ -45,6 +45,9 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 	ui->tab_results->setVisible(false);
 	ui->action_Close_Analysis->setDisabled(true);
 
+	ui->radio_directory->setChecked(false);
+	ui->radio_image->setChecked(true);
+
 	scan_in_progress = false;
 	index_in_progress = false;
 }
@@ -99,11 +102,19 @@ Main_Window::~Main_Window() {
 }
 
 void Main_Window::on_browse_button_clicked() {
-	QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
-	QDir	directory(selected_directory);
+	if ( ui->radio_directory->isChecked() == true ) {
+		QString	selected_directory = QFileDialog::getExistingDirectory(this, tr("Find Files"), "~", QFileDialog::ShowDirsOnly);
+		QDir	directory(selected_directory);
 
-	if ( directory.exists(selected_directory) == true )
-		ui->directory_line->setText(selected_directory);
+		if ( directory.exists(selected_directory) == true )
+			ui->source_line->setText(selected_directory);
+	} else {
+		QString	selected_file = QFileDialog::getOpenFileName(this, tr("Find File"), "~");
+		QFile	file(selected_file);
+
+		if ( file.exists() == true )
+			ui->source_line->setText(selected_file);
+	}
 }
 
 void Main_Window::on_scan_button_clicked() {
@@ -180,13 +191,12 @@ void Main_Window::launch_extractors() {
 	firefox_engine->start();
 }
 
-
 void Main_Window::process_scan() {
-	if ( ui->directory_line->text().isEmpty() == true ) {
+	if ( ui->source_line->text().isEmpty() == true ) {
 		return;
 	}
 
-	search_engine = new Parsing_Engine((void*)zmq_context, ui->directory_line->text(), db);
+	search_engine = new Parsing_Engine((void*)zmq_context, ui->source_line->text(), db);
 
 	chrome_engine = new Chrome_Extractor((void*)zmq_context, db);
 	firefox_engine = new Firefox_Extractor((void*)zmq_context, db);
@@ -207,16 +217,15 @@ void Main_Window::process_scan() {
 	search_engine->start();
 }
 
-
 void Main_Window::process_index() {
 	QStringList folders;
 
-	if ( ui->directory_line->text().isEmpty() == true ) {
+	if ( ui->source_line->text().isEmpty() == true ) {
 		qCritical() << "No folder to index!";
 		return;
 	}
 
-	folders << ui->directory_line->text();
+	folders << ui->source_line->text();
 	qDebug() << folders;
 
 	index_engine = new Indexing_Engine(strigi_daemon_path, working_directory);
