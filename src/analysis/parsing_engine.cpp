@@ -27,22 +27,13 @@
 
 #include "analysis/parsing_engine.h"
 
-<<<<<<< HEAD
-Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db) : QThread() {
-	e.calling_method = "Parsing_Engine";
-
-	if ( z_context == NULL ) {
-		e.msg = "z_context is NULL";
-		throw e;
-	}
-
-=======
 Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QThread() {
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 	zmq_context = (zmq::context_t*) z_context;
 
 	if ( r_path.isEmpty() == true ) {
+		e.calling_method = "Parsing_Engine";
 		e.msg = "r_path is empty";
+
 		throw e;
 	}
 
@@ -51,13 +42,9 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 //	magic_object = magic_open(MAGIC_CHECK);
 
 	if ( db == NULL ) {
-<<<<<<< HEAD
-		e.msg = "Databse is NULL";
-=======
 		e.calling_method = "Parsing_Engine";
 		e.msg = "Database is NULL";
 
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 		throw e;
 	}
 
@@ -74,28 +61,12 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 Parsing_Engine::~Parsing_Engine() {
 }
 
-void	Parsing_Engine::run() {
-	QFileInfo	file_info(root_path);
+void Parsing_Engine::run() {
 	continue_scan = true;
 	e.calling_method = "Parsing_Engine::run";
 
-	if ( file_info.exists() == false ) {
-		qCritical() << "Parsing_Engine: " << root_path << " does not exist";
-		return;
-	}
-
 	try {
 		if ( root_path.isEmpty() == false ) {
-<<<<<<< HEAD
-			zmq::socket_t	socket(*zmq_context, ZMQ_PUB);
-#ifdef WINDOWS_OS
-			socket.bind("tcp://127.0.0.1:5555");
-#else
-			socket.bind("inproc://forensics-parser.inproc");
-#endif
-			emit ready();
-			// Pause to let the extractors start and connect
-=======
 			zmq::socket_t socket(*zmq_context, ZMQ_PUSH);
 
 			socket.bind(ZMQ_INPROC_PARSER_PUSH);
@@ -104,22 +75,10 @@ void	Parsing_Engine::run() {
 			emit ready();
 			// Pause to let the extractors start and connect
 			sleep(1); // TODO: is it really useful ?
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
-			if ( file_info.isDir() == true ) {
-				File_System_Wrapper	search(database);
-				search.recursive_directories_search(socket, root_path);
-			} else {
-				Sleuthkit_Wrapper	search(&socket, database);
-				search.image_process(root_path);
-			}
+			recursive_search(socket, root_path);
 
-<<<<<<< HEAD
-			send_zmq("END;", socket);
-			// TODO: send a signal
-=======
 			socket.close();
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 		}
 	} catch (const std::exception& e) {
 		qCritical() << "Parsing_Engine: " << e.what();
@@ -128,21 +87,10 @@ void	Parsing_Engine::run() {
 	qDebug() << e.calling_method << "Parsing completed";
 }
 
-void	Parsing_Engine::set_root_path(const QString& dir_path) {
+void Parsing_Engine::set_root_path(const QString& dir_path) {
 	root_path = dir_path;
 }
 
-<<<<<<< HEAD
-void	Parsing_Engine::send_zmq(const std::string& message, zmq::socket_t& socket) {
-	zmq::message_t	z_msg(message.size() + 1);
-	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
-	socket.send(z_msg);
-}
-
-void	Parsing_Engine::stop_scan() {
-	continue_scan = false;
-}
-=======
 void Parsing_Engine::stop() {
 	continue_scan = false;
 }
@@ -219,7 +167,6 @@ void Parsing_Engine::send_zmq(const struct_file& file, zmq::socket_t& socket) {
 	snprintf((char*)z_msg_data.data(), file.full_path.size() + 1, "%s", file.full_path.toAscii().constData());
 	socket.send(z_msg_data);
 }
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
 bool	Parsing_Engine::is_known(const struct_file& file) {
 	if ( known_files_dbs == NULL )
