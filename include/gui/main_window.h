@@ -91,7 +91,7 @@ class Main_Window : public QMainWindow
 		/*
 		 * Models
 		 */
-		Database*			db;
+		Database*		db;
 		web_browser_models	web_models;
 
 		// scanned files

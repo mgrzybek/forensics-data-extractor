@@ -97,6 +97,7 @@ void Web_Browser_Extractor::run()
 }
 
 void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& key, const uint& value) {
+	// TODO: check if we need to avoid null values (Chrome: visit_count == 0 -> 1 hit?)
 	if ( value > 0 ) {
 		QMap<QString, uint>::iterator iter = map.find(key);
 

@@ -83,6 +83,7 @@ void Chrome_Extractor::extract_places(const QString& file) {
 	{
 		SQLITE_OPEN(file)
 		// TODO: remove last "/" using the regex
+		// perl -pe 's/^https*:\/\/(.*?)\/.*?$/$1/'
 		QSqlQuery	query(db);
 #ifdef WINDOWS_OS
 		QRegExp	url_cleaner("^https{0,1}\:\/\/(.+)(\/.*|$)");
@@ -93,6 +94,19 @@ void Chrome_Extractor::extract_places(const QString& file) {
 #endif
 		url_cleaner.setMinimal(true);
 
+		/*
+		 * rebuilding the history:
+		 *
+		 * select urls.url, visits.visit_time from urls, visits where urls.id = visits.url
+		 * select urls.url, urls.title, urls.visit_count, urls.typed_count,
+		 *	datetime( urls.last_visit_time/1000000-11644473600, 'unixepoch' ) as lastvisit_date ,
+		 *	urls.hidden, visits.visit_time, visits.from_visit, visits.transition
+		 *	from urls, visits
+		 *	where urls.id = visits.url;
+		 *
+		 * TODO: add the last_visit_time to the database
+		 * Take care of Window's time convertion to UNIX timestamp
+		 */
 		query.exec("SELECT visit_count, url FROM urls ORDER BY visit_count DESC, url ASC;");
 
 		while (query.next()) {

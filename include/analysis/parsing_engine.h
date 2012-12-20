@@ -47,6 +47,8 @@
 #include "common.h"
 #include "database.h"
 #include "checksum.h"
+#include "sleuthkit_wrapper.h"
+#include "file_system_wrapper.h"
 #include "databases/generic_database.h"
 
 class Parsing_Engine : public QThread
@@ -59,7 +61,7 @@ class Parsing_Engine : public QThread
 		 *
 		 * @arg	z_context	: the ZMQ context to be used
 		 * @arg	r_path		: the path to parse
-		 * @arg	db			: the database used to store the analysis's data
+		 * @arg	db		: the database used to store the analysis's data
 		 *
 		 */
 		Parsing_Engine(void* z_context, const QString& r_path, Database* db);
@@ -82,7 +84,7 @@ class Parsing_Engine : public QThread
 		 *
 		 * Update root_path attribute
 		 *
-		 * @arg	dir_path	:	the new path
+		 * @arg	dir_path	: the new path
 		 *
 		 */
 		void	set_root_path(const QString& dir_path);
@@ -90,8 +92,8 @@ class Parsing_Engine : public QThread
 	signals:
 		void	ready();
 
-	private slots:
-		//void	stop_scan();
+	public slots:
+		void	stop_scan();
 
 	private:
 		/*
@@ -108,15 +110,6 @@ class Parsing_Engine : public QThread
 //		magichandle_t*	magic_object;
 
 		Exception		e;
-
-		/*
-		 * recursive_search
-		 *
-		 * @arg	socket	:	the ZMQ socket to use
-		 * @arg	dir_path	:	 the directory to scan
-		 *
-		 */
-		void	recursive_search(zmq::socket_t& socket, const QString& dir_path);
 
 		/*
 		 * send_zmq

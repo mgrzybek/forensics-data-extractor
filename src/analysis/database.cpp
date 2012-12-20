@@ -133,7 +133,6 @@ bool	Database::atomic_exec(const QString& query) {
 		return false;
 	}
 
-	qDebug() << "query OK: " << query;
 	return true;
 }
 
