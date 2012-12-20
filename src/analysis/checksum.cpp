@@ -30,8 +30,25 @@
 Checksum::Checksum() {
 }
 
+<<<<<<< HEAD
 bool	Checksum::process_all(struct_file* file) {
 	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
+=======
+bool	Checksum::process_all() {
+	SHA_CTX	sha1_ctx;
+	MD5_CTX	md5_ctx;
+
+	uchar	data[1024];
+	uchar	sha1[SHA_DIGEST_LENGTH];
+	uchar	md5[MD5_DIGEST_LENGTH];
+
+	QFile	q_file(file->full_path);
+	if ( q_file.open(QIODevice::ReadOnly) == false ) {
+		qCritical() << "Cannot open " << file->full_path;
+		return false;
+	}
+	FILE*	opened_file = fdopen(q_file.handle(), "rb");
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 	int	bytes;
 	uchar	data[1024];
 
@@ -42,6 +59,7 @@ bool	Checksum::process_all(struct_file* file) {
 
 	if ( opened_file == NULL ) {
 		qCritical() << "Cannot open " << file->full_path << " for sha1";
+		perror(NULL);
 		return false;
 	}
 
@@ -102,5 +120,12 @@ bool	Checksum::get_final(struct_file* file) {
 	for (int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i) {
 		file->md5.append(QString::number(md5[i], 16));
 	}
+<<<<<<< HEAD
+=======
+
+	fclose(opened_file);
+	q_file.close();
+
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 	return true;
 }

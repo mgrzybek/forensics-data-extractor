@@ -28,22 +28,19 @@
 #ifndef WEB_BROWSER_EXTRACTOR_H
 #define WEB_BROWSER_EXTRACTOR_H
 
-#include <QStandardItemModel>
 #include <QFileSystemModel>
 #include <QStringBuilder>
-#include <QRunnable>
 #include <QRegExp>
-#include <QThread>
 #include <QDebug>
 #include <QtSql>
 #include <QMap>
 
 #include <zmq.hpp>
 
-#include "../common.h"
-#include "../analysis/database.h"
+#include "common.h"
+#include "extractors/generic_extractor.h"
 
-class Web_Browser_Extractor : public QThread
+class Web_Browser_Extractor : public Generic_Extractor
 {
 //	Q_OBJECT
 
@@ -52,10 +49,11 @@ class Web_Browser_Extractor : public QThread
 		 * Constructor
 		 *
 		 * @arg	z_context	: ZMQ context to be used
-		 * @arg	db			: the analysis's database to update
+		 * @arg z_output_uri	: the ZMQ URI to send results to
+		 * @arg file_path		: the file to process
 		 *
 		 */
-		Web_Browser_Extractor(void* z_context, Database* db);
+		Web_Browser_Extractor(void* z_context, const std::string& z_output_uri, const QString& file_path);
 
 		/*
 		 * Destructor
@@ -73,31 +71,27 @@ class Web_Browser_Extractor : public QThread
 		 */
 		void	run();
 
-		virtual void	files_filter(const QString& file_path) = 0;
+		virtual void	files_filter() = 0;
 
-		virtual void	extract_places(const QString& file) = 0;
-		virtual void	extract_cookies(const QString& file) = 0;
-		virtual void	extract_downloads(const QString& file) = 0;
-		virtual void	extract_forms(const QString& file) = 0;
-		virtual void	extract_search(const QString& file) = 0;
-		virtual void	extract_signons(const QString& file) = 0;
+		virtual void	extract_places() = 0;
+		virtual void	extract_cookies() = 0;
+		virtual void	extract_downloads() = 0;
+		virtual void	extract_forms() = 0;
+		virtual void	extract_search() = 0;
+		virtual void	extract_signons() = 0;
+
+//	signals:
+//		void	refresh_models();
 
 	protected:
-		zmq::context_t*		zmq_context;
 		QString				dir_path;
 
 		QMap<QString, uint>	url_map;
 		QMap<QString, uint>	keyword_map;
 
-		Database*			database;
 		web_browser_models*	models;
 		//web_browser_analysed_files	files;
 		QStringList			files;
-
-		Exception			e;
-
-		//void	append_extracted_files_to_model_files();
-		void	append_files_to_model_files(const QStringList& f);
 
 		/*
 		 * update_map
@@ -125,11 +119,11 @@ class Web_Browser_Extractor : public QThread
 		void	update_db_search();
 
 		/*
-		 * set_files_to_analysed()
+		 * set_file_to_analysed()
 		 *
 		 *
 		 */
-		void	set_files_to_analysed();
+		void	set_file_to_analysed();
 };
 
 #endif // WEB_BROWSER_EXTRACTOR_H

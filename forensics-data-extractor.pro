@@ -40,26 +40,35 @@ win32:INCLUDEPATH	+= ../zeromq-2.1/include
 INCLUDEPATH	+= include
 LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
 
-SOURCES		+= src/main.cpp \
+SOURCES		+= src/fde-console.cpp \
 		src/gui/main_window.cpp \
 		src/gui/configuration.cpp \
 		src/analysis/indexing_engine.cpp \
 		src/extractors/firefox_extractor.cpp \
+		src/extractors/extractor_select.cpp \
 		src/extractors/web_browser_extractor.cpp \
 		src/extractors/chrome_extractor.cpp \
+		src/extractors/worker.cpp \
+		src/extractors/generic_extractor.cpp \
 		src/analysis/parsing_engine.cpp \
 		src/analysis/database.cpp \
 		src/analysis/checksum.cpp \
 		src/exception.cpp \
 		src/databases/nsrl.cpp \
 		src/databases/generic_database.cpp \
+<<<<<<< HEAD
     src/analysis/sleuthkit_wrapper.cpp \
     src/analysis/file_system_wrapper.cpp
+=======
+		src/analysis/router.cpp \
+    src/analysis/receiver.cpp
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
 HEADERS		+= include/gui/main_window.h\
 		include/gui/configuration.h \
 		include/common.h \
 		include/analysis/indexing_engine.h \
+		include/extractors/extractor_select.h \
 		include/extractors/firefox_extractor.h \
 		include/extractors/web_browser_extractor.h\
 		include/extractors/chrome_extractor.h \
@@ -69,8 +78,15 @@ HEADERS		+= include/gui/main_window.h\
 		include/exception.h \
 		include/databases/nsrl.h \
 		include/databases/generic_database.h \
+<<<<<<< HEAD
     include/analysis/sleuthkit_wrapper.h \
     include/analysis/file_system_wrapper.h
+=======
+		include/extractors/worker.h \
+		include/extractors/generic_extractor.h \
+		include/analysis/router.h \
+    include/analysis/receiver.h
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
 FORMS	+=	ui/main_window.ui \
 		ui/configuration.ui

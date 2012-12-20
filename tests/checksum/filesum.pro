@@ -2,7 +2,7 @@
 # File name: forensics-data-extractor.pro
 # Description: describes the Qt project and how to build it
 #
-# @author Mathieu Grzybek on 2012-12-20
+# @author Mathieu Grzybek on 2012-05-20
 # @copyright 2012 Mathieu Grzybek. All rights reserved.
 # @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
 #
@@ -25,29 +25,18 @@
 
 QT		+= core sql
 
-TARGET		= parser
+TARGET		= filesum
 TEMPLATE	= app
 
-CONFIG		+= thread
-LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
 INCLUDEPATH	+= ../../include
+LIBS		+= -lssl -lcrypto
 
-SOURCES		+= parser.cpp \
-		../../src/analysis/database.cpp \
+SOURCES		+= filesum.cpp \
 		../../src/analysis/checksum.cpp \
-		../../src/analysis/sleuthkit_wrapper.cpp \
-		../../src/analysis/file_system_wrapper.cpp \
-		../../src/analysis/parsing_engine.cpp \
-		../../src/databases/generic_database.cpp \
 		../../src/exception.cpp
-		
 
-HEADERS		+= parser.h \
-		../../include/analysis/database.h \
+HEADERS		+= filesum.h \
 		../../include/analysis/checksum.h \
-		../../include/analysis/sleuthkit_wrapper.h \
-		../../include/analysis/file_system_wrapper.h \
-		../../include/analysis/parsing_engine.h \
-		../../include/databases/generic_database.h \
+		../../include/common.h \
 		../../include/exception.h
 

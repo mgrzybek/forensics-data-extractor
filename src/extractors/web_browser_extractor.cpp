@@ -28,72 +28,25 @@
 #include "extractors/web_browser_extractor.h"
 
 Web_Browser_Extractor::Web_Browser_Extractor(
-		void*			z_context,
-		Database*		db
-		)
+		void*	z_context,
+		const std::string&	z_output_uri,
+		const QString& file_path
+		) : Generic_Extractor(z_context, z_output_uri, file_path)
 {
-	if ( z_context == NULL ) {
-		e.calling_method = "Web_Browser_Extractor";
-		e.msg = "z_context is NULL";
-
-		throw e;
-	}
-
-	zmq_context	= (zmq::context_t*) z_context;
-
-	if ( db == NULL ) {
-		e.calling_method = "Web_Browser_Extractor";
-		e.msg = "db is NULL";
-
-		throw e;
-	}
-
-	database	= db;
-
-	models	= NULL;
+	error.calling_method = "Web_Browser_Extractor";
 }
 
 Web_Browser_Extractor::~Web_Browser_Extractor() {
-
 }
 
 void Web_Browser_Extractor::run()
 {
-	zmq::socket_t	socket(*zmq_context, ZMQ_SUB);
-	bool			connected = false;
-
-	while ( connected == false ) {
-		try {
-			socket.setsockopt(ZMQ_SUBSCRIBE, 0, 0);
-#ifdef WINDOWS_OS
-			socket.connect("tcp://127.0.0.1:5555");
-#else
-			socket.connect("inproc://forensics-parser.inproc");
-#endif
-			connected = true;
-			while (1) {
-				QString			string_message;
-				zmq::message_t	z_message;
-
-				socket.recv(&z_message);
-				string_message = static_cast<char*>(z_message.data());
-
-				if ( string_message.compare("END;") != 0 )
-					files_filter(string_message);
-				else
-					break;
-			}
-		} catch (const std::exception& e) {
-			qCritical() << "Web_Browser_Extractor: " << e.what();
-		}
-	}
-
-	connected = false;
-	set_files_to_analysed();
+	files_filter();
+	set_file_to_analysed();
 	update_db_places();
 	update_db_search();
-	emit finished();
 	qDebug() << "Web_Browser_Extrator: thread end";
+//	emit refresh_models();
 }
 
 void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& key, const uint& value) {
@@ -110,58 +63,62 @@ void	Web_Browser_Extractor::update_map(QMap<QString, uint>& map, const QString& 
 }
 
 void	Web_Browser_Extractor::update_db_places() {
+	QString	queries;
 	dir_path.clear(); // TODO: check if it is useful
 
 	qDebug() << "URL Map size: " << url_map.size();
 
 	for ( QMap<QString, uint>::const_iterator iter = url_map.begin() ; iter != url_map.end() ; iter++ ) {
-		QStringList	queries;
-		QString		query;
+		QString	query;
 
-		query = "INSERT OR IGNORE INTO place (site, hits) VALUES ('" % iter.key() % "',0);";
-		queries << query;
+		query = "INSERT OR IGNORE INTO place (site, hits) VALUES ('" % QString(iter.key()).replace("'", "\'") % "',0);";
+		queries += query;
+		queries += ZMQ_QUERIES_SEPARATOR;
+
 		query = "UPDATE place SET hits = hits + " % QString::number(iter.value()) % " WHERE site = '" % iter.key() % "';";
-		queries << query;
-
-		//qDebug() << "update_model_places()" << queries;
-
-		database->exec(queries);
+		queries += query;
+		queries += ZMQ_QUERIES_SEPARATOR;
 	}
+
+	queries.resize(queries.size() - 1);
+
+	if ( queries.size() > 0 )
+		send_zmq(queries);
 
 	// TODO: keep clear() ?
 	url_map.clear();
 }
 
 void	Web_Browser_Extractor::update_db_search() {
+	QString	queries;
 	qDebug() << "Keywords Map size: " << keyword_map.size();
 
 	for ( QMap<QString, uint>::const_iterator iter = keyword_map.begin() ; iter != keyword_map.end() ; iter++ ) {
-		QStringList	queries;
-		QString		query;
+		QString	query;
 
-		query = "INSERT OR IGNORE INTO search (name, hits) VALUES ('" % iter.key() % "',0);";
-		queries << query;
+		query = "INSERT OR IGNORE INTO search (name, hits) VALUES ('" % QString(iter.key()).replace("'", "\'") % "',0);";
+		queries += query;
+		queries += ZMQ_QUERIES_SEPARATOR;
+
 		query = "UPDATE search SET hits = hits + " % QString::number(iter.value()) % " WHERE name = '" % iter.key() % "';";
-		queries << query;
-
-		//qDebug() << "update_model_places()" << queries;
-
-		database->exec(queries);
+		queries += query;
+		queries += ZMQ_QUERIES_SEPARATOR;
 	}
+
+	queries.resize(queries.size() - 1);
+
+	if ( queries.size() > 0 )
+		send_zmq(queries);
 
 	// TODO: keep clear() ?
 	keyword_map.clear();
 }
 
-void	Web_Browser_Extractor::set_files_to_analysed() {
-	QString		query;
-	QStringList	queries;
+void	Web_Browser_Extractor::set_file_to_analysed() {
+	QString	query;
 
-	Q_FOREACH(QString file, files) {
-		query = "UPDATE parsed_file SET analysed = 1 WHERE file = '" % file % "';";
-		queries << query;
-		query.clear();
-	}
+	query = "UPDATE parsed_file SET analysed = 1 WHERE file = '" % file % "';";
+	send_zmq(query);
 
-	database->exec(queries);
+	query.clear();
 }

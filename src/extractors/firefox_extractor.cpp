@@ -40,10 +40,10 @@ Firefox_Extractor::Firefox_Extractor(
 */
 Firefox_Extractor::Firefox_Extractor(
 		void*		z_context,
-		Database*	db
-		) : Web_Browser_Extractor(
-			z_context,
-			db
+		const std::string& z_output_uri,
+		const QString& file_path
+	) : Web_Browser_Extractor(
+				z_context, z_output_uri, file_path
 			)
 {
 	url_map.clear();
@@ -52,42 +52,43 @@ Firefox_Extractor::Firefox_Extractor(
 Firefox_Extractor::~Firefox_Extractor() {
 }
 
-void Firefox_Extractor::files_filter(const QString& file_path) {
-	QStringList file_path_parts = file_path.split("/", QString::SkipEmptyParts);
-	QString file = file_path_parts.at(file_path_parts.size() - 1);
+void Firefox_Extractor::files_filter() {
+	QStringList file_path_parts = file.split("/", QString::SkipEmptyParts);
+	QString file_name = file_path_parts.at(file_path_parts.size() - 1);
 
-	if ( file.compare("cookies.sqlite") == 0 ) {
-		//files.cookies << file_path;
-		files << file_path;
-		extract_cookies(file_path);
+	if ( file_name.compare("cookies.sqlite") == 0 ) {
+		extract_cookies();
 	}
-	if ( file.compare("downloads.sqlite") == 0 ) {
-		//files.downloads << file_path;
-		files << file_path;
-		extract_downloads(file_path);
+	if ( file_name.compare("downloads.sqlite") == 0 ) {
+		extract_downloads();
 	}
-	if ( file.compare("forms.sqlite") == 0 ) {
-		//files.forms << file_path;
-		files << file_path;
-		extract_forms(file_path);
+	if ( file_name.compare("forms.sqlite") == 0 ) {
+		extract_forms();
 	}
-	if ( file.compare("places.sqlite") == 0 ) {
-		//files.places << file_path;
-		files << file_path;
-		extract_places(file_path);
+	if ( file_name.compare("places.sqlite") == 0 ) {
+		extract_places();
 	}
-//	if ( file.compare("search.sqlite") == 0 ) {
-//		files.searches << file_path;
-//		extract_search(file_path);
+//	if ( file_name.compare("search.sqlite") == 0 ) {
+//		extract_search();
 //	}
 	if ( file.compare("signons.sqlite") == 0 ) {
-		//files.signons << file_path;
-		files << file_path;
-		extract_signons(file_path);
+		extract_signons();
 	}
 }
 
-void Firefox_Extractor::extract_places(const QString& file) {
+regex_list	Firefox_Extractor::get_regexes() {
+	regex_list	result;
+
+	result.append(QRegExp("^cookies.sqlite$"));
+	result.append(QRegExp("^downloads.sqlite$"));
+	result.append(QRegExp("^forms.sqlite$"));
+	result.append(QRegExp("^places.sqlite$"));
+	result.append(QRegExp("^signons.sqlite$"));
+
+	return result;
+}
+
+void Firefox_Extractor::extract_places() {
 	{
 		SQLITE_OPEN(file)
 
@@ -110,7 +111,7 @@ void Firefox_Extractor::extract_places(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Firefox_Extractor::extract_cookies(const QString& file) {
+void Firefox_Extractor::extract_cookies() {
 	{
 		SQLITE_OPEN(file)
 
@@ -121,17 +122,17 @@ void Firefox_Extractor::extract_cookies(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString() % "',";
-			insert_query += "'" % query.value(3).toString() % "',";
-			insert_query += "'" % query.value(4).toString() % "',";
-			insert_query += "'" % query.value(5).toString() % "',";
-			insert_query += "'" % query.value(6).toString() % "',";
-			insert_query += "'" % query.value(7).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(3).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(4).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(5).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(6).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(7).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -140,7 +141,7 @@ void Firefox_Extractor::extract_cookies(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Firefox_Extractor::extract_downloads(const QString& file) {
+void Firefox_Extractor::extract_downloads() {
 	{
 		SQLITE_OPEN(file)
 
@@ -151,12 +152,12 @@ void Firefox_Extractor::extract_downloads(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -165,7 +166,7 @@ void Firefox_Extractor::extract_downloads(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Firefox_Extractor::extract_forms(const QString& file) {
+void Firefox_Extractor::extract_forms() {
 	{
 		SQLITE_OPEN(file)
 
@@ -176,12 +177,12 @@ void Firefox_Extractor::extract_forms(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO form (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -192,7 +193,7 @@ void Firefox_Extractor::extract_forms(const QString& file) {
 }
 
 // TODO: can we really extract these data?
-void Firefox_Extractor::extract_search(const QString& file) {
+void Firefox_Extractor::extract_search() {
 	{
 		SQLITE_OPEN(file)
 
@@ -209,7 +210,7 @@ void Firefox_Extractor::extract_search(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Firefox_Extractor::extract_signons(const QString& file) {
+void Firefox_Extractor::extract_signons() {
 	{
 		SQLITE_OPEN(file)
 
@@ -220,12 +221,12 @@ void Firefox_Extractor::extract_signons(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();

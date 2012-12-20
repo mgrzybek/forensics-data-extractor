@@ -38,11 +38,11 @@ Chrome_Extractor::Chrome_Extractor(
 }
 */
 Chrome_Extractor::Chrome_Extractor(
-		void*		z_context,
-		Database*	db
+		void*		z_context, const std::string& z_output_uri, const QString& file_path
 		) : Web_Browser_Extractor(
 			z_context,
-			db
+			z_output_uri,
+			file_path
 			)
 {
 }
@@ -50,36 +50,34 @@ Chrome_Extractor::Chrome_Extractor(
 Chrome_Extractor::~Chrome_Extractor() {
 }
 
-void Chrome_Extractor::files_filter(const QString& file_path) {
-	QStringList file_path_parts = file_path.split("/", QString::SkipEmptyParts);
-	QString file = file_path_parts.at(file_path_parts.size() - 1);
+void Chrome_Extractor::files_filter() {
+	QStringList file_path_parts = file.split("/", QString::SkipEmptyParts);
+	QString file_name = file_path_parts.at(file_path_parts.size() - 1);
 
-	if ( file.compare("Cookies") == 0 ) {
-		//files.cookies << file_path;
-		files << file_path;
-		extract_places(file_path);
+	if ( file_name.compare("Cookies") == 0 ) {
+		extract_places();
 	}
-	if ( file.compare("History") == 0 ) {
-		//files.downloads << file_path;
-		files << file_path;
-		extract_downloads(file_path);
-
-		//files.places << file_path;
-		files << file_path;
-		extract_places(file_path);
-
-		//files.searches << file_path;
-		files << file_path;
-		extract_search(file_path);
+	if ( file_name.compare("History") == 0 ) {
+		extract_downloads();
+		extract_places();
+		extract_search();
 	}
-	if ( file.compare("Login Data") == 0 ) {
-		//files.signons << file_path;
-		files << file_path;
-		extract_signons(file_path);
+	if ( file_name.compare("Login Data") == 0 ) {
+		extract_signons();
 	}
 }
 
-void Chrome_Extractor::extract_places(const QString& file) {
+regex_list	Chrome_Extractor::get_regexes() {
+	regex_list	result;
+
+	result.append(QRegExp("^Cookies$"));
+	result.append(QRegExp("^History$"));
+	result.append(QRegExp("^Login Data$"));
+
+	return result;
+}
+
+void Chrome_Extractor::extract_places() {
 	{
 		SQLITE_OPEN(file)
 		// TODO: remove last "/" using the regex
@@ -125,7 +123,7 @@ void Chrome_Extractor::extract_places(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Chrome_Extractor::extract_cookies(const QString& file) {
+void Chrome_Extractor::extract_cookies() {
 	{
 		SQLITE_OPEN(file)
 
@@ -136,17 +134,17 @@ void Chrome_Extractor::extract_cookies(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
-			insert_query += "'" % query.value(0).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(1).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(2).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(3).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(4).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(5).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(6).toString().replace("'","\'") % "',";
-			insert_query += "'" % query.value(7).toString().replace("'","\'");
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(3).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(4).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(5).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(6).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(7).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -155,7 +153,7 @@ void Chrome_Extractor::extract_cookies(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Chrome_Extractor::extract_downloads(const QString& file) {
+void Chrome_Extractor::extract_downloads() {
 	{
 		SQLITE_OPEN(file)
 
@@ -166,12 +164,12 @@ void Chrome_Extractor::extract_downloads(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -180,7 +178,7 @@ void Chrome_Extractor::extract_downloads(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Chrome_Extractor::extract_forms(const QString& file) {
+void Chrome_Extractor::extract_forms() {
 	{
 		SQLITE_OPEN(file)
 
@@ -191,12 +189,12 @@ void Chrome_Extractor::extract_forms(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO form (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -204,7 +202,7 @@ void Chrome_Extractor::extract_forms(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Chrome_Extractor::extract_search(const QString& file) {
+void Chrome_Extractor::extract_search() {
 	{
 		SQLITE_OPEN(file)
 
@@ -213,7 +211,7 @@ void Chrome_Extractor::extract_search(const QString& file) {
 		query.exec("SELECT term, COUNT(*) FROM keyword_search_terms GROUP BY term;");
 
 		while (query.next()) {
-			update_map(keyword_map, query.value(0).toString().replace("'","''"), query.value(1).toUInt());
+			update_map(keyword_map, query.value(0).toString(), query.value(1).toUInt());
 		}
 
 		query.clear();
@@ -221,7 +219,7 @@ void Chrome_Extractor::extract_search(const QString& file) {
 	SQLITE_CLOSE(file)
 }
 
-void Chrome_Extractor::extract_signons(const QString& file) {
+void Chrome_Extractor::extract_signons() {
 	{
 		SQLITE_OPEN(file)
 
@@ -232,12 +230,12 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 
 		while (query.next()) {
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-			insert_query += "'" % query.value(0).toString() % "',";
-			insert_query += "'" % query.value(1).toString() % "',";
-			insert_query += "'" % query.value(2).toString();
+			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
+			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
 			insert_query += "');";
 
-			database->exec(insert_query);
+			send_zmq(insert_query);
 		}
 
 		query.clear();
@@ -245,4 +243,3 @@ void Chrome_Extractor::extract_signons(const QString& file) {
 	}
 	SQLITE_CLOSE(file)
 }
-

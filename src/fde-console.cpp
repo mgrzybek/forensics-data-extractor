@@ -1,9 +1,9 @@
 /**
  * Project: forensics-data-extractor
- * File name: parser.cpp
- * Description: describes the command line tool to parse an image or a directory
+ * File name: fde-console.cpp
+ * Description: the main function of the GUI console
  *
- * @author Mathieu Grzybek on 2012-12-20
+ * @author Mathieu Grzybek on 2012-05-20
  * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
@@ -24,12 +24,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#include <iostream>
-#include <stdlib.h>
-#include <zmq.hpp>
 
-#include "analysis/parsing_engine.h"
+#include <QtGui/QApplication>
+#include "gui/main_window.h"
 
-int	main(int argc, char *argv[]);
-void	usage();
+int main(int argc, char *argv[])
+{
+	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
+	QCoreApplication::setApplicationName("Qt-Console");
+
+	zmq::context_t zmq_context(1);
+	QApplication a(argc, argv);
+
+	Main_Window w((void*)&zmq_context);
+	w.show();
+
+	return a.exec();
+}
 

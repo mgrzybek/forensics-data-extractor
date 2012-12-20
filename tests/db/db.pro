@@ -1,5 +1,5 @@
 # Project: forensics-data-extractor
-# File name: forensics-data-extractor.pro
+# File name: db.pro
 # Description: describes the Qt project and how to build it
 #
 # @author Mathieu Grzybek on 2012-05-20

@@ -26,3 +26,7 @@
  */
 
 #include "databases/generic_database.h"
+
+const char*	Generic_Database::get_name() {
+	return name.toAscii().constData();
+}

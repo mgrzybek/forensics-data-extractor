@@ -29,7 +29,7 @@
 #define GENERIC_DATABASE_H
 
 #include <QSettings>
-#include <QList>
+#include <QMap>
 
 #include "../common.h"
 
@@ -61,6 +61,15 @@ class	Generic_Database {
 		 */
 		virtual bool	is_known(const struct_file& file) = 0;
 
+		virtual bool	update_connection_info(const h_known_db_config& config) = 0;
+
+		/*
+		 *
+		 *
+		 *
+		 */
+		const char*	get_name();
+
 	protected:
 		/*
 		 * error
@@ -68,8 +77,15 @@ class	Generic_Database {
 		 * This exception type is used to throw pre-defined errors
 		 */
 		Exception	error;
+
+		/*
+		 * name
+		 *
+		 * This is the name of the database
+		 */
+		QString		name;
 };
 
-typedef QList<Generic_Database*>	generic_database_list;
+typedef QMap<QString, Generic_Database*>	generic_database_list;
 
 #endif // GENERIC_DATABAASE_H

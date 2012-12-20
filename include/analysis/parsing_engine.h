@@ -41,7 +41,7 @@
 #include <QString>
 #include <QDebug>
 #include <QFile>
-#include <QList>
+#include <QMap>
 #include <QDir>
 
 #include "common.h"
@@ -50,6 +50,7 @@
 #include "sleuthkit_wrapper.h"
 #include "file_system_wrapper.h"
 #include "databases/generic_database.h"
+#include "extractors/extractor_select.h"
 
 class Parsing_Engine : public QThread
 {
@@ -61,10 +62,15 @@ class Parsing_Engine : public QThread
 		 *
 		 * @arg	z_context	: the ZMQ context to be used
 		 * @arg	r_path		: the path to parse
+<<<<<<< HEAD
 		 * @arg	db		: the database used to store the analysis's data
+=======
+		 * @arg	db			: the database used to store the analysis's data
+		 * @arg known_d_dbs	: the list of the known files databases
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 		 *
 		 */
-		Parsing_Engine(void* z_context, const QString& r_path, Database* db);
+		Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs);
 
 		/*
 		 * Destructor
@@ -93,7 +99,11 @@ class Parsing_Engine : public QThread
 		void	ready();
 
 	public slots:
+<<<<<<< HEAD
 		void	stop_scan();
+=======
+		void	stop();
+>>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 
 	private:
 		/*
@@ -101,7 +111,7 @@ class Parsing_Engine : public QThread
 		 */
 		// Messaging
 		zmq::context_t*	zmq_context;
-		bool		continue_scan;
+		bool			continue_scan;
 
 		// Files data
 		QString			root_path;
@@ -116,11 +126,11 @@ class Parsing_Engine : public QThread
 		 *
 		 * Used to send messages through ZMQ system
 		 *
-		 * @arg	message	:	the string to send
+		 * @arg	file	:	the file to send
 		 * @arg	socket	:	the ZMQ socket to use
 		 *
 		 */
-		void	send_zmq(const std::string& message, zmq::socket_t& socket);
+		void send_zmq(const struct_file& file, zmq::socket_t& socket);
 
 		/*
 		 * is_known

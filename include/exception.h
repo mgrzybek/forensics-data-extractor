@@ -39,6 +39,7 @@ class Exception : public std::exception
 		~Exception() throw();
 
 		void	print();
+		const char* what() const throw();
 
 		QString	calling_method;
 		QString	msg;

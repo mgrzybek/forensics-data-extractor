@@ -40,7 +40,8 @@ class NSRL : public Generic_Database
 		NSRL(const h_known_db_config& config);
 		~NSRL();
 
-		bool is_known(const struct_file& file);
+		bool	is_known(const struct_file& file);
+		bool	update_connection_info(const h_known_db_config& config);
 
 	private:
 		QSqlDatabase	db;

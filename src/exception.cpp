@@ -41,3 +41,7 @@ Exception::~Exception() throw() {
 void	Exception::print() {
 	qCritical() << calling_method << ": " << msg;
 }
+
+const char* Exception::what() const throw() {
+	return msg.toAscii().constData();
+}
