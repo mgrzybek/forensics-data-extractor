@@ -2,7 +2,7 @@
 # File name: forensics-data-extractor.pro
 # Description: describes the Qt project and how to build it
 #
-# @author Mathieu Grzybek on 2012-12-20
+# @author Mathieu Grzybek on 2012-11-08
 # @copyright 2012 Mathieu Grzybek. All rights reserved.
 # @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
 #
@@ -28,26 +28,33 @@ QT		+= core sql
 TARGET		= parser
 TEMPLATE	= app
 
-CONFIG		+= thread
-LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
 INCLUDEPATH	+= ../../include
+LIBS		+= -lssl -lcrypto -lzmq
 
 SOURCES		+= parser.cpp \
-		../../src/analysis/database.cpp \
-		../../src/analysis/checksum.cpp \
-		../../src/analysis/sleuthkit_wrapper.cpp \
-		../../src/analysis/file_system_wrapper.cpp \
+		fake_worker.cpp \
 		../../src/analysis/parsing_engine.cpp \
 		../../src/databases/generic_database.cpp \
+		../../src/extractors/extractor_select.cpp \
+		../../src/extractors/generic_extractor.cpp \
+		../../src/extractors/web_browser_extractor.cpp \
+		../../src/extractors/chrome_extractor.cpp \
+		../../src/extractors/firefox_extractor.cpp \
+		../../src/analysis/checksum.cpp \
+		../../src/analysis/database.cpp \
 		../../src/exception.cpp
-		
 
 HEADERS		+= parser.h \
-		../../include/analysis/database.h \
-		../../include/analysis/checksum.h \
-		../../include/analysis/sleuthkit_wrapper.h \
-		../../include/analysis/file_system_wrapper.h \
+		fake_worker.h \
 		../../include/analysis/parsing_engine.h \
-		../../include/databases/generic_database.h \
+		../../include/databases/generic_database.h\
+		../../include/extractors/extractor_select.h\
+		../../include/extractors/generic_extractor.h \
+		../../include/extractors/web_browser_extractor.h \
+		../../include/extractors/chrome_extractor.h \
+		../../include/extractors/firefox_extractor.h \
+		../../include/analysis/checksum.h \
+		../../include/analysis/database.h \
+		../../include/common.h \
 		../../include/exception.h
 
