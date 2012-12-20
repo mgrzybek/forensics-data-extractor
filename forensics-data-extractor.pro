@@ -56,21 +56,18 @@ SOURCES		+= src/fde-console.cpp \
 		src/exception.cpp \
 		src/databases/nsrl.cpp \
 		src/databases/generic_database.cpp \
-<<<<<<< HEAD
-    src/analysis/sleuthkit_wrapper.cpp \
-    src/analysis/file_system_wrapper.cpp
-=======
+		src/analysis/sleuthkit_wrapper.cpp \
+		src/analysis/file_system_wrapper.cpp \
 		src/analysis/router.cpp \
-    src/analysis/receiver.cpp
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
+		src/analysis/receiver.cpp
 
-HEADERS		+= include/gui/main_window.h\
+HEADERS		+= include/gui/main_window.h \
 		include/gui/configuration.h \
 		include/common.h \
 		include/analysis/indexing_engine.h \
 		include/extractors/extractor_select.h \
 		include/extractors/firefox_extractor.h \
-		include/extractors/web_browser_extractor.h\
+		include/extractors/web_browser_extractor.h \
 		include/extractors/chrome_extractor.h \
 		include/analysis/parsing_engine.h \
 		include/analysis/database.h \
@@ -78,15 +75,13 @@ HEADERS		+= include/gui/main_window.h\
 		include/exception.h \
 		include/databases/nsrl.h \
 		include/databases/generic_database.h \
-<<<<<<< HEAD
-    include/analysis/sleuthkit_wrapper.h \
-    include/analysis/file_system_wrapper.h
-=======
+		include/analysis/sleuthkit_wrapper.h \
+		include/analysis/file_system_wrapper.h \
 		include/extractors/worker.h \
 		include/extractors/generic_extractor.h \
 		include/analysis/router.h \
-    include/analysis/receiver.h
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
+		include/analysis/receiver.h
 
 FORMS	+=	ui/main_window.ui \
-		ui/configuration.ui
+		ui/configuration.ui \
+    ui/main_window.ui
