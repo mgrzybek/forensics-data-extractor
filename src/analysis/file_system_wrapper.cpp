@@ -33,13 +33,31 @@ File_System_Wrapper::File_System_Wrapper(Database* db) {
 		e.msg = "db is NULL";
 		throw e;
 	}
+	database = db;
 
+	socket = NULL;
+	continue_scan = true;
+}
+
+File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db) {
+	e.calling_method = "File_System_Wrapper";
+
+	if ( z_socket == NULL ) {
+		e.msg = "z_socket is NULL";
+		throw e;
+	}
+	socket = (zmq::socket_t*) z_socket;
+
+	if ( db == NULL ) {
+		e.msg = "db is NULL";
+		throw e;
+	}
 	database = db;
 
 	continue_scan = true;
 }
 
-void File_System_Wrapper::recursive_directories_search(zmq::socket_t& socket, const QString& dir_path) {
+void File_System_Wrapper::recursive_directories_search(const QString& dir_path) {
 	QDir		path(dir_path);
 	QStringList	directories = path.entryList(QDir::AllDirs | QDir::NoDot | QDir::NoDotDot | QDir::Hidden | QDir::NoSymLinks);
 	QStringList	files = path.entryList(QDir::Files | QDir::Hidden);
@@ -63,7 +81,7 @@ void File_System_Wrapper::recursive_directories_search(zmq::socket_t& socket, co
 			checksum_calculator.process_all(&s_file);
 
 			// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-			send_zmq(s_file.full_path.toAscii().constData(), socket);
+			send_zmq(s_file.full_path.toAscii().constData());
 			database->insert_file(s_file);
 		}
 	}
@@ -75,12 +93,12 @@ void File_System_Wrapper::recursive_directories_search(zmq::socket_t& socket, co
 		abs_path_dir += "/";
 		abs_path_dir += dir;
 
-		recursive_directories_search(socket, abs_path_dir);
+		recursive_directories_search(abs_path_dir);
 	}
 }
 
-void File_System_Wrapper::send_zmq(const std::string& message, zmq::socket_t& socket) {
+void File_System_Wrapper::send_zmq(const std::string& message) {
 	zmq::message_t	z_msg(message.size() + 1);
 	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
-	socket.send(z_msg);
+	socket->send(z_msg);
 }

@@ -28,7 +28,7 @@
 #include <QtGui/QApplication>
 #include "gui/main_window.h"
 
-int main(int argc, char *argv[])
+int	main(int argc, char *argv[])
 {
 	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
 	QCoreApplication::setApplicationName("Qt-Console");

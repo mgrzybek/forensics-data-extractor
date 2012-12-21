@@ -27,29 +27,54 @@
 
 #include "analysis/parsing_engine.h"
 
+// TODO: use some C++11 feature: call constructor form another constructor
 Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QThread() {
+	e.calling_method = "Parsing_Engine";
+
+	if ( z_context == NULL ) {
+		e.msg = "z_context is NULL";
+		throw e;
+	}
 	zmq_context = (zmq::context_t*) z_context;
 
 	if ( r_path.isEmpty() == true ) {
-		e.calling_method = "Parsing_Engine";
 		e.msg = "r_path is empty";
-
 		throw e;
 	}
-
 	root_path = r_path;
 
 //	magic_object = magic_open(MAGIC_CHECK);
 
 	if ( db == NULL ) {
-		e.calling_method = "Parsing_Engine";
 		e.msg = "Database is NULL";
-
 		throw e;
 	}
-
 	database = db;
 
+	known_files_dbs = known_f_dbs;
+
+//	if ( magic_object == NULL )
+//		qCritical() << "Cannot init the magic library";
+
+	continue_scan = true;
+}
+
+Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QThread() {
+	if ( r_path.isEmpty() == true ) {
+		e.msg = "r_path is empty";
+		throw e;
+	}
+	root_path = r_path;
+
+//	magic_object = magic_open(MAGIC_CHECK);
+
+	if ( db == NULL ) {
+		e.msg = "Database is NULL";
+		throw e;
+	}
+	database = db;
+
+	zmq_context = NULL;
 	known_files_dbs = known_f_dbs;
 
 //	if ( magic_object == NULL )
@@ -68,23 +93,34 @@ void Parsing_Engine::run() {
 	try {
 		if ( root_path.isEmpty() == false ) {
 			QFileInfo	file_info(root_path);
-			zmq::socket_t socket(*zmq_context, ZMQ_PUSH);
 
-			socket.bind(ZMQ_INPROC_PARSER_PUSH);
-			qDebug() << e.calling_method << ": socket binded to " << ZMQ_INPROC_PARSER_PUSH;
+			if ( zmq_context != NULL ) {
+				zmq::socket_t	socket(*zmq_context, ZMQ_PUSH);
 
-			emit ready();
-			// Pause to let the extractors start and connect
+				socket.bind(ZMQ_INPROC_PARSER_PUSH);
+				qDebug() << e.calling_method << ": socket binded to " << ZMQ_INPROC_PARSER_PUSH;
 
-			if ( file_info.isDir() == true ) {
-				File_System_Wrapper	directory_process(database);
-				directory_process.recursive_directories_search(socket, root_path);
+				emit ready();
+				// Pause to let the extractors start and connect
+
+				if ( file_info.isDir() == true ) {
+					File_System_Wrapper	directory_process(&socket, database);
+					directory_process.recursive_directories_search(root_path);
+				} else {
+					Sleuthkit_Wrapper	image_process(&socket, database);
+					image_process.image_process(root_path);
+				}
+
+				socket.close();
 			} else {
-				Sleuthkit_Wrapper	image_process(&socket, database);
-				image_process.image_process(root_path);
+				if ( file_info.isDir() == true ) {
+					File_System_Wrapper	directory_process(database);
+					directory_process.recursive_directories_search(root_path);
+				} else {
+					Sleuthkit_Wrapper	image_process(database);
+					image_process.image_process(root_path);
+				}
 			}
-
-			socket.close();
 		}
 	} catch (const std::exception& e) {
 		qCritical() << "Parsing_Engine: " << e.what();

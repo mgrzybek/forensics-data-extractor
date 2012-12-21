@@ -62,14 +62,12 @@ class Parsing_Engine : public QThread
 		 *
 		 * @arg	z_context	: the ZMQ context to be used
 		 * @arg	r_path		: the path to parse
-<<<<<<< HEAD
 		 * @arg	db		: the database used to store the analysis's data
-=======
 		 * @arg	db			: the database used to store the analysis's data
 		 * @arg known_d_dbs	: the list of the known files databases
->>>>>>> b7d82cf56b32cf4887eaeb06ee607fe2f194a14f
 		 *
 		 */
+		Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs);
 		Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs);
 
 		/*

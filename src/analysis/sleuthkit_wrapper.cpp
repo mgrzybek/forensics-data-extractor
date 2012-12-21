@@ -43,6 +43,17 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db) {
 	hdb_info = NULL;
 }
 
+Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
+	if ( db == NULL ) {
+		e.calling_method = "Sleuthkit_Wrapper";
+		e.msg = "db is NULL";
+	}
+
+	socket	= NULL;
+	database = db;
+	hdb_info = NULL;
+}
+
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
 	TskImgInfo *img_info = new TskImgInfo();
 
@@ -126,31 +137,34 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 		if (fs_file->getMeta()) {
 			ssize_t cnt;
 
-			/* Note that we could also cycle through all of the attributes in the
+			/*
+			 * Note that we could also cycle through all of the attributes in the
 			 * file by using one of the tsk_fs_attr_get() functions and reading it
 			 * with tsk_fs_attr_read().  See the File Systems section of the Library
 			 * User's Guide for more details:
-			 * http://www.sleuthkit.org/sleuthkit/docs/api-docs/ */
+			 * http://www.sleuthkit.org/sleuthkit/docs/api-docs/
+			 */
 
 			// read file contents
 			if (fs_file->getMeta()->getType() == TSK_FS_META_TYPE_REG) {
-				// TODO: check if the file has already been processed
-
 				struct_file	s_file;
+				TSK_OFF_T	fSize = fs_file->getMeta()->getSize();
+				Checksum	checksum_calculator;
+				int		myflags = 0;
+
 				s_file.full_path = path;
 				s_file.full_path += "/";
 				s_file.full_path += fs_file->getName()->getName();
 				s_file.md5 = "";
 				s_file.sha1 = "";
 
-				if ( database->is_parsed_file(s_file) == true )
+				if ( database->is_parsed_file(s_file) == true ) {
+					qDebug() << "already parsed:" << s_file.full_path;
 					continue;
+				}
 
-				Checksum	checksum_calculator;
 				checksum_calculator.init();
 
-				int myflags = 0;
-				TSK_OFF_T fSize = fs_file->getMeta()->getSize();
 				for ( off = 0 ; off < fSize ; off += len ) {
 					if (fSize - off < 2048)
 						len = (size_t) (fSize - off);
@@ -169,15 +183,15 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 					}
 
 					// do something with the data...
-					// TODO: update checksums
 					checksum_calculator.update(cnt, (uchar)*buf);
 				}
-				// TODO: get the checksums
 				checksum_calculator.get_final(&s_file);
 
 				// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-				send_zmq(s_file.full_path.toAscii().constData());
-				database->insert_file(s_file);
+				if ( socket != NULL )
+					send_zmq(s_file.full_path.toAscii().constData());
+				if ( database->insert_file(s_file) == false )
+					qCritical() << "Cannot insert " << s_file.full_path;
 			}
 
 			// recurse into another directory (unless it is a '.' or '..')
@@ -189,10 +203,8 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 						// add the address to the top of the stack
 						tsk_stack_push(stack, fs_file->getMeta()->getAddr() );
 
-						snprintf(path2, 4096, "%s/%s", path,
-							fs_file->getName()->getName());
-						if (procDir(fs_info, stack, fs_file->getMeta()->getAddr(),
-								path2)) {
+						snprintf(path2, 4096, "%s/%s", path, fs_file->getName()->getName());
+						if (procDir(fs_info, stack, fs_file->getMeta()->getAddr(), path2)) {
 							fs_file->close();
 							fs_dir->close();
 							free(path2);
@@ -237,9 +249,7 @@ uint8_t	Sleuthkit_Wrapper::procFs(TskImgInfo * img_info, TSK_OFF_T start) {
 
 	// Process the directories
 	if (procDir(fs_info, stack, fs_info->getRootINum(), "")) {
-		fprintf(stderr,
-			"Error processing file system in partition at offset %" PRIuOFF
-			"\n", start);
+		fprintf(stderr, "Error processing file system in partition at offset %" PRIuOFF "\n", start);
 		delete fs_info;
 		return 1;
 	}
@@ -259,8 +269,7 @@ uint8_t	Sleuthkit_Wrapper::procVs(TskImgInfo * img_info, TSK_OFF_T start) {
 	// Open the volume system
 	if ((vs_info->open(img_info, start, TSK_VS_TYPE_DETECT)) == 1) {
 		if (tsk_verbose)
-			fprintf(stderr,
-				"Error determining volume system -- trying file systems\n");
+			fprintf(stderr, "Error determining volume system -- trying file systems\n");
 
 		/* There was no volume system, but there could be a file system */
 		tsk_error_reset();

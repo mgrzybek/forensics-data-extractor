@@ -27,6 +27,9 @@
 #include "parser.h"
 
 int	main(int argc, char *argv[]) {
+	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
+	QCoreApplication::setApplicationName("Parser");
+
 	QString	path;
 	QString	db_file;
 
@@ -48,9 +51,8 @@ int	main(int argc, char *argv[]) {
 		}
 	}
 
-	zmq::context_t	zmq_context(1);
 	Database	database(db_file);
-	Parsing_Engine	parser((void*) &zmq_context, path, &database);
+	Parsing_Engine	parser(path, &database, NULL);
 
 	try {
 		parser.start();

@@ -41,6 +41,7 @@ class Sleuthkit_Wrapper
 {
 	public:
 		Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db);
+		Sleuthkit_Wrapper(Database* db);
 
 		/**
 		 * image_process

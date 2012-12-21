@@ -40,16 +40,19 @@
 class File_System_Wrapper
 {
 	public:
+		/**
+		 * @param	socket	the ZMQ socket to use
+		 */
 		File_System_Wrapper(Database* db);
+		File_System_Wrapper(void* z_socket, Database* db);
 
 		/*
 		 * recursive_directory_search
 		 *
-		 * @arg	socket		:	the ZMQ socket to use
 		 * @arg	dir_path	:	the directory to scan
 		 *
 		 */
-		void	recursive_directories_search(zmq::socket_t& socket, const QString& dir_path);
+		void	recursive_directories_search(const QString& dir_path);
 
 	private:
 		/*
@@ -61,10 +64,11 @@ class File_System_Wrapper
 		 * @arg	socket	:	the ZMQ socket to use
 		 *
 		 */
-		void	send_zmq(const std::string& message, zmq::socket_t& socket);
+		void	send_zmq(const std::string& message);
 
 		bool		continue_scan;
 		Database*	database;
+		zmq::socket_t*	socket;
 		Exception	e;
 };
 
