@@ -1,16 +1,16 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: forensics-data-extractor
+ * File name: sleuthkit_wrapper.h
+ * Description: describes the usage of Sleuthkit to process forensic images
  *
- * @author Mathieu Grzybek on 20??-??-??
+ * @author Mathieu Grzybek on 2012-12-21
  * @copyright 20?? Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * forensics-data-extractor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -29,8 +29,6 @@
 #define SLEUTHKIT_WRAPPER_H
 
 #include <tsk3/libtsk.h>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <zmq.hpp>
 
 #include "common.h"
@@ -40,7 +38,25 @@
 class Sleuthkit_Wrapper
 {
 	public:
+		/**
+		 * Sleuthkit_Wrapper
+		 *
+		 * The constructor of the class
+		 * It will send messages using ZMQ
+		 *
+		 * @param	socket	the ZMQ socket to use
+		 * @param	db	the database used to store the results
+		 */
 		Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db);
+
+		/**
+		 * Sleuthkit_Wrapper
+		 *
+		 * The constructor of the class
+		 * It will not send messages using ZMQ
+		 *
+		 * @param	db	the database used to store the results
+		 */
 		Sleuthkit_Wrapper(Database* db);
 
 		/**
@@ -86,13 +102,41 @@ class Sleuthkit_Wrapper
 		*/
 		uint8_t procFs(TskImgInfo * img_info, TSK_OFF_T start);
 
+		/**
+		 * socket
+		 *
+		 * The ZMQ socket used to send messages
+		 */
 		void	send_zmq(const std::string& message);
 
+		/**
+		 * e
+		 *
+		 * This exception is used to report problems
+		 */
 		Exception	e;
+
+		/**
+		 * socket
+		 *
+		 * The ZMQ socket used to send messages
+		 */
 		zmq::socket_t*	socket;
+
+		/**
+		 * database
+		 *
+		 * The database object to use to store the results
+		 */
 		Database*	database;
 
-		TskHdbInfo	*hdb_info;
+		/**
+		 * hdb_info
+		 *
+		 * Used to process hash files
+		 * TODO: use another object
+		 */
+		//TskHdbInfo	*hdb_info;
 };
 
 #endif // SLEUTHKIT_WRAPPER_H

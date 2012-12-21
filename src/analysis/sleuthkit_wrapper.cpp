@@ -1,7 +1,7 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: forensics-data-extractor
+ * File name: sleuthkit_wrapper.h
+ * Description: implements the usage of Sleuthkit to process forensic images
  *
  * @author Mathieu Grzybek on 20??-??-??
  * @copyright 20?? Mathieu Grzybek. All rights reserved.
@@ -10,7 +10,7 @@
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * forensics-data-extractor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -157,6 +157,9 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 				s_file.full_path += fs_file->getName()->getName();
 				s_file.md5 = "";
 				s_file.sha1 = "";
+				s_file.size = static_cast<qint64>(fs_file->getAttrSize());
+				// TODO: get the inode number
+				//s_file.inode = ;
 
 				if ( database->is_parsed_file(s_file) == true ) {
 					qDebug() << "already parsed:" << s_file.full_path;

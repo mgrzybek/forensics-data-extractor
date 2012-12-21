@@ -28,7 +28,6 @@
 #ifndef PARSING_ENGINE_H
 #define PARSING_ENGINE_H
 
-//#include <magic.h>
 #include <zmq.hpp>
 
 #include <QStandardItemModel>
@@ -57,25 +56,33 @@ class Parsing_Engine : public QThread
 	Q_OBJECT
 
 	public:
-		/*
-		 * Constructor
+		/**
+		 * Parsing_Engine
 		 *
-		 * @arg	z_context	: the ZMQ context to be used
-		 * @arg	r_path		: the path to parse
-		 * @arg	db		: the database used to store the analysis's data
-		 * @arg	db			: the database used to store the analysis's data
-		 * @arg known_d_dbs	: the list of the known files databases
-		 *
+		 * @param	r_path		the path to parse
+		 * @param	db		the database used to store the analysis's data
+		 * @param	db		the database used to store the analysis's data
+		 * @param	known_d_dbs	the list of the known files databases
 		 */
 		Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs);
+
+		/**
+		 * Parsing_Engine
+		 *
+		 * @param	z_context	the ZMQ context to be used
+		 * @param	r_path		the path to parse
+		 * @param	db		the database used to store the analysis's data
+		 * @param	db		the database used to store the analysis's data
+		 * @param	known_d_dbs	the list of the known files databases
+		 */
 		Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs);
 
-		/*
+		/**
 		 * Destructor
 		 */
 		~Parsing_Engine();
 
-		/*
+		/**
 		 * run
 		 *
 		 * This method needs to be written to allow QThread to start
@@ -83,57 +90,95 @@ class Parsing_Engine : public QThread
 		 */
 		void	run();
 
-		/*
+		/**
 		 * set_root_path
 		 *
 		 * Update root_path attribute
 		 *
-		 * @arg	dir_path	: the new path
+		 * @param	dir_path	the new path
 		 *
 		 */
 		void	set_root_path(const QString& dir_path);
 
 	signals:
+		/**
+		 * ready
+		 *
+		 * This signal is sent when to start the extractors
+		 */
 		void	ready();
 
 	public slots:
+		/**
+		 * stop
+		 *
+		 * This slot is used to make the thread stop
+		 */
 		void	stop();
 
 	private:
-		/*
-		 * Attributes
+		/**
+		 * zmq_context
+		 *
+		 * The ZMQ context to use to send messages
 		 */
-		// Messaging
 		zmq::context_t*	zmq_context;
-		bool		continue_scan;
 
-		// Files data
-		QString			root_path;
-		Database*		database;
+		/**
+		 * continue_scan
+		 *
+		 * This boolean is used to stop the process
+		 * It is updated using SLOT / SIGNALS
+		 */
+		bool	continue_scan;
+
+		/**
+		 * root_path
+		 *
+		 * The directory or the image to process
+		 */
+		QString		root_path;
+
+		/**
+		 * database
+		 *
+		 * The database used to store the results
+		 */
+		Database*	database;
+
+		/**
+		 * known_files_dbs
+		 *
+		 * A list of the databases to walk to find known files
+		 */
 		generic_database_list*	known_files_dbs;
-//		magichandle_t*	magic_object;
 
+		/**
+		 * e
+		 *
+		 * This exception is used to report problems
+		 */
 		Exception		e;
 
-		/*
+		/**
 		 * send_zmq
 		 *
 		 * Used to send messages through ZMQ system
 		 *
-		 * @arg	file	:	the file to send
-		 * @arg	socket	:	the ZMQ socket to use
+		 * @param	file	the file to send
+		 * @param	socket	the ZMQ socket to use
 		 *
 		 */
 		void send_zmq(const struct_file& file, zmq::socket_t& socket);
 
-		/*
+		/**
 		 * is_known
 		 *
 		 * Uses the known_files_databases list to answer the question:
 		 * -> is this file known?
 		 *
-		 * @arg		: the file to check
-		 * @return	: true (yes)
+		 * @param	file	the file to check
+		 * @return	true (yes)
 		 */
 		bool	is_known(const struct_file& file);
 };

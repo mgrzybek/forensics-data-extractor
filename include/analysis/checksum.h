@@ -38,22 +38,100 @@
 class Checksum
 {
 	public:
+		/**
+		 * Checksum
+		 *
+		 * Contructor of the object
+		 */
 		Checksum();
 
+		/**
+		 * process_all
+		 *
+		 * Opens a file from the file system and computes the checksums
+		 *
+		 * @param	file	the file to process
+		 *
+		 * @return	true on success
+		 */
 		bool	process_all(struct_file* file);
+
+		/**
+		 * init
+		 *
+		 * Inits the MD5 / SHA1 objects
+		 *
+		 * @return	true on success
+		 */
 		bool	init();
+
+		/**
+		 * update
+		 *
+		 * Updates the checksums
+		 *
+		 * @param	bytes	the number of bytes stored in data
+		 * @param	data	the data to use to update the checksums
+		 *
+		 * @return	true on success
+		 */
 		bool	update(const int& bytes, const uchar data[1024]);
+
+		/**
+		 * update
+		 *
+		 * Updates the checksums
+		 *
+		 * @param	bytes	the number of bytes stored in data
+		 * @param	data	the data to use to update the checksums
+		 *
+		 * @return	true on success
+		 */
 		bool	update(const int& bytes, const char data);
+
+		/**
+		 * get_final
+		 *
+		 * Adds the checksums into the file
+		 *
+		 * @param	file	the file to update
+		 *
+		 * @return	true on success
+		 */
 		bool	get_final(struct_file* file);
 
 	private:
+		/**
+		 * e
+		 *
+		 * This exception is used to report problems
+		 */
 		Exception	e;
 
+		/**
+		 * sha1_ctx
+		 * This struct is used to compute the SHA1 sum
+		 */
 		SHA_CTX	sha1_ctx;
+
+		/**
+		 * md5_ctx
+		 * This struct is used to compute the MD5 sum
+		 */
 		MD5_CTX	md5_ctx;
 
-
+		/**
+		 * sha1
+		 *
+		 * This array is used to store the SHA1 sum
+		 */
 		uchar	sha1[SHA_DIGEST_LENGTH];
+
+		/**
+		 * md5
+		 *
+		 * This array is used to store the MD5 sum
+		 */
 		uchar	md5[MD5_DIGEST_LENGTH];
 };
 

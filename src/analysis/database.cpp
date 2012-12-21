@@ -153,7 +153,7 @@ bool	Database::init_schema() {
 	queries << "CREATE TABLE IF NOT EXISTS signon (host TEXT PRIMARY KEY, id TEXT NOT NULL, password TEXT NOT NULL );";
 
 	// Files
-	queries << "CREATE TABLE IF NOT EXISTS parsed_file (file TEXT PRIMARY KEY, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL);";
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, PRIMARY KEY(source, file));";
 
 	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
 	queries << "CREATE VIEW IF NOT EXISTS not_analysed_file AS SELECT file FROM parsed_file WHERE analysed = 0";
@@ -176,16 +176,20 @@ bool	Database::atomic_exec(const QString& query) {
 }
 
 bool	Database::insert_file(const struct_file& file) {
-	//QString	query = "INSERT OR IGNORE INTO parsed_file (file, md5, sha1) VALUES ('";
-	QString	query = "INSERT INTO parsed_file (file, md5, sha1) VALUES ('";
+	QString	query;
+
+	if ( file.inode > -1 )
+		query = "INSERT INTO parsed_file (inode, source, file, size, md5, sha1) VALUES ('" % QString::number(file.inode) % "','";
+	else
+		query = "INSERT INTO parsed_file (source, file, size, md5, sha1) VALUES ('";
 
 	// TODO: understand why formatValue does not work
 	//query += analysis_db.driver()->formatValue(file.full_path) % "','";
+	query += file.source % "','";
 	query += file.full_path % "','";
-	query += file.md5;
-	query += "','";
-	query += file.sha1;
-	query += "');";
+	query += QString::number(file.size) % "','";
+	query += file.md5 % "','";
+	query += file.sha1 % "');";
 
 	return exec(query);
 }

@@ -1,16 +1,16 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: forensics-data-extractor
+ * File name: file_system_wrapper.cpp
+ * Description: implements the parser used to process mounted file systems
  *
- * @author Mathieu Grzybek on 20??-??-??
- * @copyright 20?? Mathieu Grzybek. All rights reserved.
+ * @author Mathieu Grzybek on 2012-12-21
+ * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * forensics-data-extractor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -75,6 +75,11 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 		s_file.full_path = dir_path;
 		s_file.full_path += "/";
 		s_file.full_path += file;
+		s_file.inode = -1;
+
+		QFileInfo	file_info(s_file.full_path);
+
+		s_file.size = file_info.size();
 
 		if ( database->is_parsed_file(s_file) == false ) {
 			Checksum	checksum_calculator;

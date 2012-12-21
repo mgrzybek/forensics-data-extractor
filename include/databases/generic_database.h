@@ -33,7 +33,7 @@
 
 #include "../common.h"
 
-/*
+/**
  * Generic_Database
  *
  * This virtual class is used to describe the shared public methods that every
@@ -48,7 +48,7 @@ class	Generic_Database {
 //		Generic_Database() = 0;
 //		~Generic_Database() = 0;
 
-		/*
+		/**
 		 * is_known
 		 *
 		 * This method queries the remote database and tells us if the given
@@ -61,24 +61,33 @@ class	Generic_Database {
 		 */
 		virtual bool	is_known(const struct_file& file) = 0;
 
+		/**
+		 * update_connection_info
+		 *
+		 * Used to update how to connect against the database
+		 *
+		 * @param	config	the new configuration to use
+		 *
+		 * @return	true on success
+		 */
 		virtual bool	update_connection_info(const h_known_db_config& config) = 0;
 
-		/*
+		/**
+		 * get_name
 		 *
-		 *
-		 *
+		 * @return	the name of the database
 		 */
 		const char*	get_name();
 
 	protected:
-		/*
+		/**
 		 * error
 		 *
 		 * This exception type is used to throw pre-defined errors
 		 */
 		Exception	error;
 
-		/*
+		/**
 		 * name
 		 *
 		 * This is the name of the database
@@ -86,6 +95,11 @@ class	Generic_Database {
 		QString		name;
 };
 
+/**
+ * generic_database_list
+ *
+ * The map of the databases {name, db object}
+ */
 typedef QMap<QString, Generic_Database*>	generic_database_list;
 
 #endif // GENERIC_DATABAASE_H

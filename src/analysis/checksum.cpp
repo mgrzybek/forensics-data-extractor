@@ -94,12 +94,12 @@ bool	Checksum::get_final(struct_file* file) {
 	}
 
 	file->sha1.clear();
-	for (int i = 0 ; i < SHA_DIGEST_LENGTH ; ++i) {
+	for ( int i = 0 ; i < SHA_DIGEST_LENGTH ; ++i ) {
 		file->sha1.append(QString::number(sha1[i], 16));
 	}
 
 	file->md5.clear();
-	for (int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i) {
+	for ( int i = 0 ; i < MD5_DIGEST_LENGTH ; ++i ) {
 		file->md5.append(QString::number(md5[i], 16));
 	}
 	return true;

@@ -29,6 +29,22 @@
 
 #include "analysis/parsing_engine.h"
 
+/**
+ * main
+ *
+ * The main function of the program
+ *
+ * @param	argc	the number of arguments
+ * @param	argv	the arguments
+ *
+ * @return	EXIT_SUCCESS or EXIT_FAILURE
+ */
 int	main(int argc, char *argv[]);
+
+/**
+ * usage
+ *
+ * Prints the usage message of the tool
+ */
 void	usage();
 

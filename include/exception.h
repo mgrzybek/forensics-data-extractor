@@ -34,14 +34,60 @@
 class Exception : public std::exception
 {
 	public:
+		/**
+		 * Exception
+		 *
+		 * This object is used to throw exceptions
+		 *
+		 * @param	method	the name of the method throwing the exception
+		 * @param	message	the error message
+		 * @throw	Exception
+		 */
 		Exception(const QString&	method, const QString& message) throw();
+
+		/**
+		 * Exception
+		 *
+		 * This object is used to throw exceptions
+		 * You need to set the calling method and the message manually
+		 *
+		 * @throw	Exception
+		 */
 		Exception() throw();
+
+		/**
+		 * The destructor
+		 */
 		~Exception() throw();
 
+		/**
+		 * print
+		 *
+		 * Prints the message to std::err
+		 */
 		void	print();
+
+		/**
+		 * what
+		 *
+		 * Gives the formatted message
+		 *
+		 * @return	the message
+		 */
 		const char* what() const throw();
 
+		/**
+		 * calling_method
+		 *
+		 * The source of the exception
+		 */
 		QString	calling_method;
+
+		/**
+		 * msg
+		 *
+		 * The explanation of the problem
+		 */
 		QString	msg;
 };
 

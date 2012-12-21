@@ -68,7 +68,10 @@ typedef	QList<QRegExp>	regex_list;
 typedef	QHash<QString, regex_list>	h_dico;
 
 typedef struct {
+	QString	source;
 	QString	name;
+	int	inode;
+	qint64	size;
 	QString	full_path;
 	QString	sha1;
 	QString	md5;
@@ -86,7 +89,7 @@ typedef struct {
 	QSqlTableModel*	extracted_files;
 } web_browser_models;
 
-typedef QHash<QString, QString>				h_known_db_config;
+typedef QHash<QString, QString>			h_known_db_config;
 typedef QHash<QString, h_known_db_config>	hh_known_db_config;
 
 #endif // COMMON_H

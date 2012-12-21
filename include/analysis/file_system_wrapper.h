@@ -1,16 +1,16 @@
 /**
- * Project:
- * File name:
- * Description:
+ * Project: forensics-data-extractor
+ * File name: file_system_wrapper.h
+ * Description: describes the parser used to process mounted file systems
  *
  * @author Mathieu Grzybek on 20??-??-??
- * @copyright 20?? Mathieu Grzybek. All rights reserved.
+ * @copyright 2012 Mathieu Grzybek. All rights reserved.
  * @version $Id: code-gpl-license.txt,v 1.2 2004/05/04 13:19:30 garry Exp $
  *
  * @see The GNU Public License (GPL) version 3 or higher
  *
  *
- * ? is free software; you can redistribute it and/or modify
+ * forensics-data-extractor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
@@ -41,34 +41,75 @@ class File_System_Wrapper
 {
 	public:
 		/**
-		 * @param	socket	the ZMQ socket to use
+		 * File_System_Wrapper
+		 *
+		 * The constructor of the class
+		 * It will not send messages using ZMQ
+		 *
+		 * @param	db	the database used to store the results
 		 */
 		File_System_Wrapper(Database* db);
+
+		/**
+		 * File_System_Wrapper
+		 *
+		 * The constructor of the class
+		 * It will send messages using ZMQ
+		 *
+		 * @param	socket	the ZMQ socket to use
+		 * @param	db	the database used to store the results
+		 */
 		File_System_Wrapper(void* z_socket, Database* db);
 
-		/*
+		/**
 		 * recursive_directory_search
 		 *
-		 * @arg	dir_path	:	the directory to scan
+		 * Walks a directory to process files
+		 *
+		 * @param	dir_path	the directory to scan
 		 *
 		 */
 		void	recursive_directories_search(const QString& dir_path);
 
 	private:
-		/*
+		/**
 		 * send_zmq
 		 *
 		 * Used to send messages through ZMQ system
 		 *
-		 * @arg	message	:	the string to send
-		 * @arg	socket	:	the ZMQ socket to use
+		 * @param	message	the string to send
+		 * @param	socket	the ZMQ socket to use
 		 *
 		 */
 		void	send_zmq(const std::string& message);
 
+		/**
+		 * continue_scan
+		 *
+		 * This boolean is used to stop the process
+		 * It is updated by the SIGNAL / SLOTS methods
+		 */
 		bool		continue_scan;
+
+		/**
+		 * database
+		 *
+		 * The database object to use to store the results
+		 */
 		Database*	database;
+
+		/**
+		 * socket
+		 *
+		 * The ZMQ socket used to send messages
+		 */
 		zmq::socket_t*	socket;
+
+		/**
+		 * e
+		 *
+		 * This exception is used to report problems
+		 */
 		Exception	e;
 };
 
