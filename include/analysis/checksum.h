@@ -110,12 +110,14 @@ class Checksum
 
 		/**
 		 * sha1_ctx
+		 *
 		 * This struct is used to compute the SHA1 sum
 		 */
 		SHA_CTX	sha1_ctx;
 
 		/**
 		 * md5_ctx
+		 *
 		 * This struct is used to compute the MD5 sum
 		 */
 		MD5_CTX	md5_ctx;
