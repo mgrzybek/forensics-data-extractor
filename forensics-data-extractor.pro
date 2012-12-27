@@ -84,4 +84,4 @@ HEADERS		+= include/gui/main_window.h \
 
 FORMS	+=	ui/main_window.ui \
 		ui/configuration.ui \
-    ui/main_window.ui
+		ui/main_window.ui
