@@ -25,7 +25,11 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#ifdef QT_5
 #include <QtGui/QGuiApplication>
+#else
+#include <QtGui/QApplication>
+#endif
 #include "gui/main_window.h"
 
 int	main(int argc, char *argv[])
@@ -34,7 +38,11 @@ int	main(int argc, char *argv[])
 	QCoreApplication::setApplicationName("Qt-Console");
 
 	zmq::context_t zmq_context(1);
-    QGuiApplication a(argc, argv);
+#ifdef QT_5
+	QGuiApplication a(argc, argv);
+#else
+	QApplication a(argc, argv);
+#endif
 
 	Main_Window w((void*)&zmq_context);
 	w.show();

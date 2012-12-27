@@ -23,6 +23,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+# Version's control
+contains(QT_VERSION, ^5\\.[0-9]\\..*) {
+	DEFINES	+= QT_5
+}
+
 QT		+= core gui widgets sql
 
 TARGET		= forensics-data-extractor
