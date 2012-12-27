@@ -167,7 +167,7 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 				//s_file.size = static_cast<qint64>(fs_file->getMeta()->getSize());
 				s_file.size = fs_file->getMeta()->getSize();
 				// TODO: get the inode number
-				s_file.inode = -1;
+				s_file.inode = fs_file->getMeta()->getAddr();
 
 				if ( database->is_parsed_file(s_file) == true ) {
 					qDebug() << "already parsed:" << s_file.full_path;

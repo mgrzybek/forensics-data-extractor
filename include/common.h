@@ -71,7 +71,7 @@ typedef	QHash<QString, regex_list>	h_dico;
 typedef struct {
 	QString	source;
 	QString	name;
-	int	inode;
+	qint64	inode;
 	qint64	size;
 	QString	full_path;
 	QString	sha1;
