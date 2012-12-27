@@ -34,14 +34,18 @@ void	Generic_Extractor::send_zmq(const QString& message) {
 	zmq::socket_t	socket(*zmq_context, ZMQ_PUSH);
 	zmq::message_t	z_message(message.size() + 1);
 
-	snprintf((char*)z_message.data(), message.size() + 1, "%s", message.toAscii().constData());
+#ifdef WINDOWS_OS
+    _snprintf((char*)z_message.data(), message.size() + 1, "%s", message.toLatin1().constData());
+#else
+    snprintf((char*)z_message.data(), message.size() + 1, "%s", message.toLatin1().constData());
+#endif
 
 	try {
 		socket.connect(zmq_output_uri.c_str());
 		socket.send(z_message);
 	//} catch (const zmq::error_t& z_error) {
 	} catch (const std::exception z_error) {
-		qCritical() << error.calling_method << ": Cannot connect against " << zmq_output_uri.c_str();
+        qCritical() << error.calling_method << ": Cannot connect against " << zmq_output_uri.c_str() << ": " << z_error.what();
 	}
 
 	socket.close();

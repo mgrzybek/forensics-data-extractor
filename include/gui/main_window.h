@@ -125,7 +125,7 @@ class Main_Window : public QMainWindow
 
 		Indexing_Engine*	index_engine;
 
-		QList<Generic_Database>	g_db;
+        QList<Generic_Database*>	g_db;
 
 		bool	scan_in_progress;
 		bool	index_in_progress;

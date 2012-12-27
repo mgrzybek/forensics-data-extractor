@@ -51,7 +51,7 @@ bool    Indexing_Engine::create_conf_file() {
 	QString file_path = working_directory + "/" + "daemon.conf";
 	QFile   file(file_path);
 
-	if ( not file.open(QIODevice::WriteOnly | QIODevice::Text) )
+    if ( ! file.open(QIODevice::WriteOnly | QIODevice::Text) )
 		return false;
 
 	QTextStream out(&file);

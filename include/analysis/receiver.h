@@ -7,7 +7,6 @@
 
 #include "common.h"
 #include "database.h"
-#include "exception.h"
 
 class Receiver : public QThread
 {

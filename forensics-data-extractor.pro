@@ -23,22 +23,20 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-QT		+= core gui sql
+QT		+= core gui widgets sql
 
 TARGET		= forensics-data-extractor
 TEMPLATE	= app
 
-CONFIG		+= thread
+CONFIG		+= qt thread
 
 # C++11 support: ZeroMQ is not ready yet
 #QMAKE_CXXFLAGS += -std=c++0x
 
-# On Windows 0MQ's inproc is not supported, we use TCP connections instead
-win32:DEFINES	+= WINDOWS_OS
-win32:LIBS	+= -L../zeromq-2.1/lib32
-win32:INCLUDEPATH	+= ../zeromq-2.1/include
 INCLUDEPATH	+= include
-LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
+
+include(qmake_conf/macx.pro)
+include(qmake_conf/windows.pro)
 
 SOURCES		+= src/fde-console.cpp \
 		src/gui/main_window.cpp \
@@ -83,5 +81,4 @@ HEADERS		+= include/gui/main_window.h \
 		include/analysis/receiver.h
 
 FORMS	+=	ui/main_window.ui \
-		ui/configuration.ui \
-		ui/main_window.ui
+		ui/configuration.ui

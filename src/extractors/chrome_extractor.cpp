@@ -83,13 +83,13 @@ void Chrome_Extractor::extract_places() {
 		// TODO: remove last "/" using the regex
 		// perl -pe 's/^https*:\/\/(.*?)\/.*?$/$1/'
 		QSqlQuery	query(db);
-#ifdef WINDOWS_OS
-		QRegExp	url_cleaner("^https{0,1}\:\/\/(.+)(\/.*|$)");
-		QRegExp slash_cleaner("\/$");
-#else
+//#ifdef WINDOWS_OS
+//		QRegExp	url_cleaner("^https{0,1}\:\/\/(.+)(\/.*|$)");
+//		QRegExp slash_cleaner("\/$");
+//#else
 		QRegExp	url_cleaner("^https{0,1}\\:\\/\\/(.+)(\\/.*|\\/|$)");
 		QRegExp slash_cleaner("\\/$");
-#endif
+//#endif
 		url_cleaner.setMinimal(true);
 
 		/*
@@ -130,18 +130,36 @@ void Chrome_Extractor::extract_cookies() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
+        QSqlField   name("name", QVariant::String);
+        QSqlField   value("value", QVariant::String);
+        QSqlField   host("host", QVariant::String);
+        QSqlField   path("path", QVariant::String);
+        QSqlField   expiration("expiration", QVariant::String);
+        QSqlField   secured("secured", QVariant::String);
+        QSqlField   http("http", QVariant::String);
+        QSqlField   last_accessed("last_accessed", QVariant::String);
+
 		query.exec("SELECT name, value, host_key, path, has_expires, secure, httponly, last_access_utc FROM cookies ORDER BY last_access_utc;");
 
 		while (query.next()) {
+            name.setValue(query.value(0));
+            value.setValue(query.value(1));
+            host.setValue(query.value(2));
+            path.setValue(query.value(3));
+            expiration.setValue(query.value(4));
+            secured.setValue(query.value(5));
+            http.setValue(query.value(6));
+            last_accessed.setValue(query.value(7));
+
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
-			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(2).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(3).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(4).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(5).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(6).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(7).toString());
+            insert_query += "'" % db.driver()->formatValue(name) % "',";
+            insert_query += "'" % db.driver()->formatValue(value) % "',";
+            insert_query += "'" % db.driver()->formatValue(host) % "',";
+            insert_query += "'" % db.driver()->formatValue(path) % "',";
+            insert_query += "'" % db.driver()->formatValue(expiration) % "',";
+            insert_query += "'" % db.driver()->formatValue(secured) % "',";
+            insert_query += "'" % db.driver()->formatValue(http) % "',";
+            insert_query += "'" % db.driver()->formatValue(last_accessed);
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -160,13 +178,21 @@ void Chrome_Extractor::extract_downloads() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
+        QSqlField   name("name", QVariant::String);
+        QSqlField   source("source", QVariant::String);
+        QSqlField   mime("mime", QVariant::String);
+
 		query.exec("SELECT full_path, url FROM downloads ORDER BY start_time;");
 
 		while (query.next()) {
+            name.setValue(query.value(0));
+            source.setValue(query.value(1));
+            mime.setValue(query.value(2));
+
 			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
+            insert_query += "'" % db.driver()->formatValue(name) % "',";
+            insert_query += "'" % db.driver()->formatValue(source) % "',";
+            insert_query += "'" % db.driver()->formatValue(mime);
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -185,13 +211,21 @@ void Chrome_Extractor::extract_forms() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
+        QSqlField   host("host", QVariant::String);
+        QSqlField   id("id", QVariant::String);
+        QSqlField   password("password", QVariant::String);
+
 		query.exec("SELECT action_url, username_value, password_value FROM logins ORDER BY action_url;");
 
 		while (query.next()) {
+            host.setValue(query.value(0));
+            id.setValue(query.value(1));
+            password.setValue(query.value(2));
+
 			insert_query = "INSERT INTO form (host, id, password) VALUES (";
-			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
+            insert_query += "'" % db.driver()->formatValue(host) % "',";
+            insert_query += "'" % db.driver()->formatValue(id) % "',";
+            insert_query += "'" % db.driver()->formatValue(password);
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -226,14 +260,22 @@ void Chrome_Extractor::extract_signons() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
+        QSqlField   host("host", QVariant::String);
+        QSqlField   id("id", QVariant::String);
+        QSqlField   password("password", QVariant::String);
+
 		query.exec("SELECT action_url, username_value, password_value FROM logins ORDER BY action_url;");
 
 		while (query.next()) {
+            host.setValue(query.value(0));
+            id.setValue(query.value(1));
+            password.setValue(query.value(2));
+
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-			insert_query += "'" % db.driver()->formatValue(query.value(0).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(1).toString()) % "',";
-			insert_query += "'" % db.driver()->formatValue(query.value(2).toString());
-			insert_query += "');";
+            insert_query += "'" % db.driver()->formatValue(host) % "',";
+            insert_query += "'" % db.driver()->formatValue(id) % "',";
+            insert_query += "'" % db.driver()->formatValue(password);
+            insert_query += "');";
 
 			send_zmq(insert_query);
 		}

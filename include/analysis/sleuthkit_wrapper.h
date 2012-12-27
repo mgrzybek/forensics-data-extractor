@@ -74,6 +74,7 @@ class Sleuthkit_Wrapper
 		 * @param fs_info File system to process
 		 * @param stack Stack to prevent infinite recursion loops
 		 * @param dir_inum Metadata address of directory to open
+         *
 		 * @param path Path of directory being opened
 		 * @returns 1 on error
 		 */

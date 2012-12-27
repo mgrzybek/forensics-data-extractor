@@ -1,4 +1,4 @@
-#include "include/extractors/worker.h"
+#include "extractors/worker.h"
 
 Worker::Worker(void* z_context, const std::string& input_uri, const std::string& output_uri)  : QThread() {
 	error.calling_method = "Worker::Worker";
@@ -59,7 +59,7 @@ void	Worker::run() {
 		z_input.recv(&z_message);
 		file_path = static_cast<char*>(z_message.data());
 
-		if ( header.isEmpty() == false and file_path.isEmpty() == false ) {
+        if ( header.isEmpty() == false && file_path.isEmpty() == false ) {
 			start_class(header, file_path);
 		}
 	}

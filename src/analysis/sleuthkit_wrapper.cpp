@@ -40,7 +40,7 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db) {
 
 	socket	= z_socket;
 	database = db;
-	hdb_info = NULL;
+    //hdb_info = NULL;
 }
 
 Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
@@ -51,7 +51,7 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
 
 	socket	= NULL;
 	database = db;
-	hdb_info = NULL;
+    //hdb_info = NULL;
 }
 
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
@@ -192,7 +192,7 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 
 				// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
 				if ( socket != NULL )
-					send_zmq(s_file.full_path.toAscii().constData());
+                    send_zmq(s_file.full_path.toLatin1().constData());
 				if ( database->insert_file(s_file) == false )
 					qCritical() << "Cannot insert " << s_file.full_path;
 			}

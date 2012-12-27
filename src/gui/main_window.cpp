@@ -363,7 +363,10 @@ void Main_Window::on_action_New_Analysis_triggered() {
 			db = new Database(db_file);
 		} catch (const std::exception& e) {
 			QErrorMessage error_msg;
-			error_msg.showMessage("Cannot init the database");
+            QString msg("Cannot init the database ");
+
+            msg += e.what();
+            error_msg.showMessage(msg);
 			error_msg.exec();
 			return;
 		}
@@ -436,7 +439,7 @@ void Main_Window::on_action_Close_Analysis_triggered() {
 		db = NULL;
 	}
 }
-
+/*
 bool Main_Window::create_analysis_db(const QString& db_file) {
 	return true;
 }
@@ -448,7 +451,7 @@ bool Main_Window::open_analysis_db(const QString& db_file) {
 bool Main_Window::save_analysis_db(QSqlQuery& query) {
 	return true;
 }
-
+*/
 void Main_Window::refresh_models() {
 	qDebug() << "Main_Window::refresh_models()";
 	update_info();

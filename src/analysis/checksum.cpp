@@ -31,7 +31,16 @@ Checksum::Checksum() {
 }
 
 bool	Checksum::process_all(struct_file* file) {
-	FILE*	opened_file = fopen(file->full_path.toAscii().constData(), "rb");
+#ifdef WINDOWS_OS
+    FILE*	opened_file = NULL;
+
+    if ( fopen_s(&opened_file, file->full_path.toLatin1().constData(), "rb") != 0 ) {
+        qCritical() << e.calling_method << ": Cannot open " << file->full_path;
+        return false;
+    }
+#else
+    FILE*	opened_file = fopen(file->full_path.toLatin1().constData(), "rb");
+#endif
 	int	bytes;
 	uchar	data[1024];
 
@@ -52,7 +61,10 @@ bool	Checksum::process_all(struct_file* file) {
 				return false;
 			}
 		}
-	} catch (const std::exception& e) {
+    } catch (const std::exception& ex) {
+        qCritical() << ex.what();
+        fclose(opened_file);
+        return false;
 	}
 
 	fclose(opened_file);
@@ -61,7 +73,7 @@ bool	Checksum::process_all(struct_file* file) {
 }
 
 bool	Checksum::init() {
-	if ( SHA1_Init(&sha1_ctx) == 0 or MD5_Init(&md5_ctx) == 0 ) {
+    if ( SHA1_Init(&sha1_ctx) == 0 || MD5_Init(&md5_ctx) == 0 ) {
 		qCritical() << "Cannot init hash engines";
 		return false;
 	}
@@ -69,7 +81,7 @@ bool	Checksum::init() {
 }
 
 bool	Checksum::update(const int& bytes, const uchar data[1024]) {
-	if ( SHA1_Update(&sha1_ctx, data, bytes) == 0 or MD5_Update(&md5_ctx, data, bytes) == 0 ) {
+    if ( SHA1_Update(&sha1_ctx, data, bytes) == 0 || MD5_Update(&md5_ctx, data, bytes) == 0 ) {
 		qCritical() << "Cannot update hash";
 		return false;
 	}
@@ -77,7 +89,7 @@ bool	Checksum::update(const int& bytes, const uchar data[1024]) {
 }
 
 bool	Checksum::update(const int& bytes, const char data) {
-	if ( SHA1_Update(&sha1_ctx, &data, bytes) == 0 or MD5_Update(&md5_ctx, &data, bytes) == 0 ) {
+    if ( SHA1_Update(&sha1_ctx, &data, bytes) == 0 || MD5_Update(&md5_ctx, &data, bytes) == 0 ) {
 		qCritical() << "Cannot update hash";
 		return false;
 	}
@@ -88,7 +100,7 @@ bool	Checksum::get_final(struct_file* file) {
 	if ( file == NULL )
 		return false;
 
-	if ( SHA1_Final(sha1, &sha1_ctx) == 0 or MD5_Final(md5, &md5_ctx) == 0 ) {
+    if ( SHA1_Final(sha1, &sha1_ctx) == 0 || MD5_Final(md5, &md5_ctx) == 0 ) {
 		// error !
 		return false;
 	}

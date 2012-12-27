@@ -86,7 +86,7 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 			checksum_calculator.process_all(&s_file);
 
 			// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
-			send_zmq(s_file.full_path.toAscii().constData());
+            send_zmq(s_file.full_path.toLatin1().constData());
 			database->insert_file(s_file);
 		}
 	}
@@ -104,6 +104,10 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 
 void File_System_Wrapper::send_zmq(const std::string& message) {
 	zmq::message_t	z_msg(message.size() + 1);
+#ifdef WINDOWS_OS
+    _snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+#else
 	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+#endif
 	socket->send(z_msg);
 }

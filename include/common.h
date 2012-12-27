@@ -34,6 +34,7 @@
 #include <QStandardItemModel>
 #include <QSqlTableModel>
 #include <QStringList>
+#include <QString>
 #include <QHash>
 
 #include "exception.h"

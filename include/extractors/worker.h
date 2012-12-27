@@ -10,7 +10,7 @@
 #include "extractors/generic_extractor.h"
 #include "extractors/chrome_extractor.h"
 #include "extractors/firefox_extractor.h"
-#include "exception.h"
+#include "common.h"
 
 typedef	QHash<QString, QRunnable*>	h_extractors;
 
