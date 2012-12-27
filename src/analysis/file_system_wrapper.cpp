@@ -27,7 +27,7 @@
 
 #include "analysis/file_system_wrapper.h"
 
-File_System_Wrapper::File_System_Wrapper(Database* db) {
+File_System_Wrapper::File_System_Wrapper(Database* db, const QString& dir_path) {
 	if ( db == NULL ) {
 		e.calling_method = "File_System_Wrapper";
 		e.msg = "db is NULL";
@@ -37,9 +37,10 @@ File_System_Wrapper::File_System_Wrapper(Database* db) {
 
 	socket = NULL;
 	continue_scan = true;
+	source_dir_path = dir_path;
 }
 
-File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db) {
+File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db, const QString& dir_path) {
 	e.calling_method = "File_System_Wrapper";
 
 	if ( z_socket == NULL ) {
@@ -55,6 +56,11 @@ File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db) {
 	database = db;
 
 	continue_scan = true;
+	source_dir_path = dir_path;
+}
+
+void File_System_Wrapper::recursive_directories_search() {
+	recursive_directories_search(source_dir_path);
 }
 
 void File_System_Wrapper::recursive_directories_search(const QString& dir_path) {
@@ -71,7 +77,7 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 		// We need  to initialize these QString to prevent segfaults in checksum_calculator
 		s_file.sha1 = "";
 		s_file.md5 = "";
-
+		s_file.source = source_dir_path;
 		s_file.full_path = dir_path;
 		s_file.full_path += "/";
 		s_file.full_path += file;

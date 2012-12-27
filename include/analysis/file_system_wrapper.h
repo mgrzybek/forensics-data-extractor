@@ -47,8 +47,9 @@ class File_System_Wrapper
 		 * It will not send messages using ZMQ
 		 *
 		 * @param	db	the database used to store the results
+		 * @param	dir_path	the directory to scan
 		 */
-		File_System_Wrapper(Database* db);
+		File_System_Wrapper(Database* db, const QString& dir_path);
 
 		/**
 		 * File_System_Wrapper
@@ -58,8 +59,21 @@ class File_System_Wrapper
 		 *
 		 * @param	socket	the ZMQ socket to use
 		 * @param	db	the database used to store the results
+		 * @param	dir_path	the directory to scan
 		 */
-		File_System_Wrapper(void* z_socket, Database* db);
+		File_System_Wrapper(void* z_socket, Database* db, const QString& dir_path);
+
+		/**
+		 * recursive_directory_search
+		 *
+		 * Walks a directory to process files
+		 *
+		 * @param	dir_path	the directory to scan
+		 *
+		 */
+		void	recursive_directories_search();
+
+	private:
 
 		/**
 		 * recursive_directory_search
@@ -71,7 +85,6 @@ class File_System_Wrapper
 		 */
 		void	recursive_directories_search(const QString& dir_path);
 
-	private:
 		/**
 		 * send_zmq
 		 *
@@ -111,6 +124,13 @@ class File_System_Wrapper
 		 * This exception is used to report problems
 		 */
 		Exception	e;
+
+		/**
+		 * source_dir_path
+		 *
+		 * The path of the directory to scan
+		 */
+		QString		source_dir_path;
 };
 
 #endif // FILE_SYSTEM_WRAPPER_H

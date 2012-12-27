@@ -27,7 +27,7 @@
 
 #include "analysis/sleuthkit_wrapper.h"
 
-Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db) {
+Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db, const QString& source_path) {
 	if ( z_socket == NULL ) {
 		e.calling_method = "Sleuthkit_Wrapper";
 		e.msg = "z_socket is NULL";
@@ -41,9 +41,10 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db) {
 	socket	= z_socket;
 	database = db;
 	//hdb_info = NULL;
+	source_image_path = source_path;
 }
 
-Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
+Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db, const QString& source_path) {
 	if ( db == NULL ) {
 		e.calling_method = "Sleuthkit_Wrapper";
 		e.msg = "db is NULL";
@@ -52,6 +53,11 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
 	socket	= NULL;
 	database = db;
 	//hdb_info = NULL;
+	source_image_path = source_path;
+}
+
+void	Sleuthkit_Wrapper::image_process() {
+	image_process(source_image_path);
 }
 
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
@@ -155,12 +161,13 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 				s_file.full_path = path;
 				s_file.full_path += "/";
 				s_file.full_path += fs_file->getName()->getName();
+				s_file.source = source_image_path;
 				s_file.md5 = "";
 				s_file.sha1 = "";
 				//s_file.size = static_cast<qint64>(fs_file->getMeta()->getSize());
 				s_file.size = fs_file->getMeta()->getSize();
 				// TODO: get the inode number
-				s_file.inode = 0;
+				s_file.inode = -1;
 
 				if ( database->is_parsed_file(s_file) == true ) {
 					qDebug() << "already parsed:" << s_file.full_path;

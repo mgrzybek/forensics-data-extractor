@@ -47,7 +47,7 @@ class Sleuthkit_Wrapper
 		 * @param	socket	the ZMQ socket to use
 		 * @param	db	the database used to store the results
 		 */
-		Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db);
+		Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db, const QString& source_path);
 
 		/**
 		 * Sleuthkit_Wrapper
@@ -57,8 +57,15 @@ class Sleuthkit_Wrapper
 		 *
 		 * @param	db	the database used to store the results
 		 */
-		Sleuthkit_Wrapper(Database* db);
+		Sleuthkit_Wrapper(Database* db, const QString& source_path);
 
+		/**
+		 * image_process
+		 *
+		 */
+		void	image_process();
+
+	private:
 		/**
 		 * image_process
 		 *
@@ -66,7 +73,6 @@ class Sleuthkit_Wrapper
 		 */
 		void	image_process(const QString& image_path);
 
-	private:
 		/**
 		 * Open a directory and cycle through its contents.  Read each file and recurse
 		 * into each directory.
@@ -74,7 +80,7 @@ class Sleuthkit_Wrapper
 		 * @param fs_info File system to process
 		 * @param stack Stack to prevent infinite recursion loops
 		 * @param dir_inum Metadata address of directory to open
-         *
+		 *
 		 * @param path Path of directory being opened
 		 * @returns 1 on error
 		 */
@@ -138,6 +144,13 @@ class Sleuthkit_Wrapper
 		 * TODO: use another object
 		 */
 		//TskHdbInfo	*hdb_info;
+
+		/**
+		 * source_image_path
+		 *
+		 * The image file of process
+		 */
+		QString		source_image_path;
 };
 
 #endif // SLEUTHKIT_WRAPPER_H
