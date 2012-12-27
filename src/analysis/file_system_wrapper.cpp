@@ -105,7 +105,7 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 void File_System_Wrapper::send_zmq(const std::string& message) {
 	zmq::message_t	z_msg(message.size() + 1);
 #ifdef WINDOWS_OS
-    _snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+    _snprintf_s((char*)z_msg.data(), message.size() + 1, message.size() + 1, "%s", message.c_str());
 #else
 	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
 #endif

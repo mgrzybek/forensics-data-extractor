@@ -35,7 +35,7 @@ void	Generic_Extractor::send_zmq(const QString& message) {
 	zmq::message_t	z_message(message.size() + 1);
 
 #ifdef WINDOWS_OS
-    _snprintf((char*)z_message.data(), message.size() + 1, "%s", message.toLatin1().constData());
+    _snprintf_s((char*)z_message.data(), message.size() + 1, message.size() + 1, "%s", message.toLatin1().constData());
 #else
     snprintf((char*)z_message.data(), message.size() + 1, "%s", message.toLatin1().constData());
 #endif

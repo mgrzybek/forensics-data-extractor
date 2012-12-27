@@ -205,8 +205,11 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 					if (tsk_stack_find(stack, fs_file->getMeta()->getAddr()) == 0) {
 						// add the address to the top of the stack
 						tsk_stack_push(stack, fs_file->getMeta()->getAddr() );
-
-						snprintf(path2, 4096, "%s/%s", path, fs_file->getName()->getName());
+#ifdef WINDOWS_OS
+                        _snprintf_s(path2, 4096, 4096, "%s/%s", path, fs_file->getName()->getName());
+#else
+                        snprintf(path2, 4096, "%s/%s", path, fs_file->getName()->getName());
+#endif
 						if (procDir(fs_info, stack, fs_file->getMeta()->getAddr(), path2)) {
 							fs_file->close();
 							fs_dir->close();
@@ -313,6 +316,10 @@ uint8_t	Sleuthkit_Wrapper::procVs(TskImgInfo * img_info, TSK_OFF_T start) {
 }
 void	Sleuthkit_Wrapper::send_zmq(const std::string& message) {
 	zmq::message_t	z_msg(message.size() + 1);
-	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+#ifdef WINDOWS_OS
+    _snprintf_s((char*)z_msg.data(), message.size() + 1, message.size() + 1, "%s", message.c_str());
+#else
+    snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+#endif
 	socket->send(z_msg);
 }

@@ -377,7 +377,7 @@ void Main_Window::on_action_New_Analysis_triggered() {
 
 		ui->tab_results->setVisible(true);
 
-		create_analysis_db(db_file);
+        //create_analysis_db(db_file);
 	}
 
 	ui->action_Close_Analysis->setEnabled(true);
@@ -405,6 +405,8 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 		db = new Database(db_file);
 	} catch (const std::exception& e) {
 		QErrorMessage error_msg;
+        QString msg("Cannot init the database: ");
+        msg += e.what();
 		error_msg.showMessage("Cannot init the database");
 		error_msg.exec();
 		return;

@@ -147,14 +147,22 @@ void Parsing_Engine::send_zmq(const struct_file& file, zmq::socket_t& socket) {
 //	socket.send(z_msg_target, ZMQ_SENDMORE);
 	// send the extractor
 	zmq::message_t	z_msg_extractor(file.extractor.size() + 1);
+#ifdef WINDOWS_OS
+    _snprintf_s((char*)z_msg_extractor.data(), file.extractor.size() + 1, file.extractor.size() + 1, "%s", file.extractor.toLatin1().constData());
+#else
     snprintf((char*)z_msg_extractor.data(), file.extractor.size() + 1, "%s", file.extractor.toLatin1().constData());
+#endif
 	socket.send(z_msg_extractor, ZMQ_SNDMORE);
 
 	/*
 	 * Data
 	 */
 	zmq::message_t	z_msg_data(file.full_path.size() + 1);
+#ifdef WINDOWS_OS
+    _snprintf_s((char*)z_msg_data.data(), file.full_path.size() + 1, file.full_path.size() + 1, "%s", file.full_path.toLatin1().constData());
+#else
     snprintf((char*)z_msg_data.data(), file.full_path.size() + 1, "%s", file.full_path.toLatin1().constData());
+#endif
 	socket.send(z_msg_data);
 }
 
