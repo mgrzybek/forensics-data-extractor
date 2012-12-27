@@ -40,7 +40,7 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(zmq::socket_t* z_socket, Database* db) {
 
 	socket	= z_socket;
 	database = db;
-    //hdb_info = NULL;
+	//hdb_info = NULL;
 }
 
 Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
@@ -51,7 +51,7 @@ Sleuthkit_Wrapper::Sleuthkit_Wrapper(Database* db) {
 
 	socket	= NULL;
 	database = db;
-    //hdb_info = NULL;
+	//hdb_info = NULL;
 }
 
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
@@ -157,9 +157,10 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 				s_file.full_path += fs_file->getName()->getName();
 				s_file.md5 = "";
 				s_file.sha1 = "";
-				s_file.size = static_cast<qint64>(fs_file->getAttrSize());
+				//s_file.size = static_cast<qint64>(fs_file->getMeta()->getSize());
+				s_file.size = fs_file->getMeta()->getSize();
 				// TODO: get the inode number
-				//s_file.inode = ;
+				s_file.inode = 0;
 
 				if ( database->is_parsed_file(s_file) == true ) {
 					qDebug() << "already parsed:" << s_file.full_path;
@@ -192,7 +193,7 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 
 				// TODO: add known files databases support (NSRL) to prevent the ZMQ message to be sent
 				if ( socket != NULL )
-                    send_zmq(s_file.full_path.toLatin1().constData());
+					send_zmq(s_file.full_path.toLatin1().constData());
 				if ( database->insert_file(s_file) == false )
 					qCritical() << "Cannot insert " << s_file.full_path;
 			}
@@ -206,9 +207,9 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 						// add the address to the top of the stack
 						tsk_stack_push(stack, fs_file->getMeta()->getAddr() );
 #ifdef WINDOWS_OS
-                        _snprintf_s(path2, 4096, 4096, "%s/%s", path, fs_file->getName()->getName());
+						_snprintf_s(path2, 4096, 4096, "%s/%s", path, fs_file->getName()->getName());
 #else
-                        snprintf(path2, 4096, "%s/%s", path, fs_file->getName()->getName());
+						snprintf(path2, 4096, "%s/%s", path, fs_file->getName()->getName());
 #endif
 						if (procDir(fs_info, stack, fs_file->getMeta()->getAddr(), path2)) {
 							fs_file->close();
@@ -315,11 +316,14 @@ uint8_t	Sleuthkit_Wrapper::procVs(TskImgInfo * img_info, TSK_OFF_T start) {
 	return 0;
 }
 void	Sleuthkit_Wrapper::send_zmq(const std::string& message) {
+	if ( socket == NULL )
+		return;
+
 	zmq::message_t	z_msg(message.size() + 1);
 #ifdef WINDOWS_OS
-    _snprintf_s((char*)z_msg.data(), message.size() + 1, message.size() + 1, "%s", message.c_str());
+	_snprintf_s((char*)z_msg.data(), message.size() + 1, message.size() + 1, "%s", message.c_str());
 #else
-    snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
+	snprintf((char*)z_msg.data(), message.size() + 1, "%s", message.c_str());
 #endif
 	socket->send(z_msg);
 }

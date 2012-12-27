@@ -23,14 +23,22 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+# Version's control
+contains(QT_VERSION, ^5\\.[0-9]\\..*) {
+	DEFINES	+= QT_5
+}
+
 QT		+= core sql
 
 TARGET		= parser
 TEMPLATE	= app
 
 CONFIG		+= thread
-LIBS		+= -lzmq -lssl -lcrypto -lz /opt/local/lib/libtsk3.a
+
 INCLUDEPATH	+= ../../include
+
+include(../../qmake_conf/macx.pro)
+include(../../qmake_conf/windows.pro)
 
 SOURCES		+= parser.cpp \
 		../../src/analysis/database.cpp \
@@ -40,7 +48,7 @@ SOURCES		+= parser.cpp \
 		../../src/analysis/parsing_engine.cpp \
 		../../src/databases/generic_database.cpp \
 		../../src/exception.cpp
-		
+
 
 HEADERS		+= parser.h \
 		../../include/analysis/database.h \
