@@ -34,9 +34,8 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTextEdit>
-//#include <QDateTime>
 #include <QProcess>
-#include <QThread>
+#include <QRunnable>
 #include <QString>
 #include <QDebug>
 #include <QFile>
@@ -51,9 +50,9 @@
 #include "databases/generic_database.h"
 #include "extractors/extractor_select.h"
 
-class Parsing_Engine : public QThread
+class Parsing_Engine : public QRunnable
 {
-	Q_OBJECT
+	//Q_OBJECT
 
 	public:
 		/**
@@ -85,8 +84,8 @@ class Parsing_Engine : public QThread
 		/**
 		 * run
 		 *
-		 * This method needs to be written to allow QThread to start
-		 *
+		 * This method needs to be written to allow QThreadPool to start
+		 * the QRunnable
 		 */
 		void	run();
 
@@ -96,17 +95,8 @@ class Parsing_Engine : public QThread
 		 * Update root_path attribute
 		 *
 		 * @param	dir_path	the new path
-		 *
 		 */
 		void	set_root_path(const QString& dir_path);
-
-	signals:
-		/**
-		 * ready
-		 *
-		 * This signal is sent when to start the extractors
-		 */
-		void	ready();
 
 	public slots:
 		/**

@@ -30,44 +30,46 @@ int	main(int argc, char *argv[]) {
 	QCoreApplication::setOrganizationName("Forensics-Data-Extractor");
 	QCoreApplication::setApplicationName("Parser");
 
-	QString	path;
-	QString	db_file;
+	QThreadPool	thread_pool;
+
+	QStringList	paths;
+	QString		db_file;
 
 	if ( argc < 5 ) {
 		usage();
 		return EXIT_FAILURE;
 	}
 
-	if ( strcmp(argv[1], "-s") == 0 and strcmp(argv[3], "-d") == 0 ) {
-		path = argv[2];
-		db_file = argv[4];
+	if ( strcmp(argv[1], "-d") == 0 and strcmp(argv[3], "-s") == 0 ) {
+		db_file = argv[2];
+		for (int i = 4 ; i < argc ; i++ )
+			paths << argv[i];
 	} else {
-		if ( strcmp(argv[1], "-d") == 0 and strcmp(argv[3], "-s") == 0 ) {
-			db_file = argv[2];
-			path = argv[4];
-		} else {
-			usage();
-			return EXIT_FAILURE;
-		}
+		usage();
+		return EXIT_FAILURE;
 	}
 
 	Database	database(db_file);
-	Parsing_Engine	parser(path, &database, NULL);
 
 	try {
-		parser.start();
-		parser.wait();
+		Q_FOREACH (QString path, paths) {
+			Parsing_Engine*	parser = new Parsing_Engine(path, &database, NULL);
+			thread_pool.start(parser);
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 		return EXIT_FAILURE;
 	}
 
+	thread_pool.waitForDone();
+
 	std::cout << database.get_row_count("parsed_file") << " files parsed" << std::endl;
+	std::cout << thread_pool.maxThreadCount() << " threads used" << std::endl;
 
 	return EXIT_SUCCESS;
 }
 
 void	usage() {
-	std::cout << "parser -s <source_file> -d <database_file>" << std::endl;
+	std::cerr<< "parser -d <database_file> -s <source> [<source>]*" << std::endl;
 }
 

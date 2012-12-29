@@ -49,7 +49,6 @@ SOURCES		+= parser.cpp \
 		../../src/databases/generic_database.cpp \
 		../../src/exception.cpp
 
-
 HEADERS		+= parser.h \
 		../../include/analysis/database.h \
 		../../include/analysis/checksum.h \
@@ -57,5 +56,6 @@ HEADERS		+= parser.h \
 		../../include/analysis/file_system_wrapper.h \
 		../../include/analysis/parsing_engine.h \
 		../../include/databases/generic_database.h \
-		../../include/exception.h
+		../../include/exception.h \
+		../../include/common.h
 

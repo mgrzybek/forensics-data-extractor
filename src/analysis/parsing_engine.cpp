@@ -28,7 +28,7 @@
 #include "analysis/parsing_engine.h"
 
 // TODO: use some C++11 feature: call constructor form another constructor
-Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QThread() {
+Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QRunnable() {
 	e.calling_method = "Parsing_Engine";
 
 	if ( z_context == NULL ) {
@@ -59,7 +59,7 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 	continue_scan = true;
 }
 
-Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QThread() {
+Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QRunnable() {
 	if ( r_path.isEmpty() == true ) {
 		e.msg = "r_path is empty";
 		throw e;
@@ -99,9 +99,6 @@ void Parsing_Engine::run() {
 
 				socket.bind(ZMQ_INPROC_PARSER_PUSH);
 				qDebug() << e.calling_method << ": socket binded to " << ZMQ_INPROC_PARSER_PUSH;
-
-				emit ready();
-				// Pause to let the extractors start and connect
 
 				if ( file_info.isDir() == true ) {
 					File_System_Wrapper	directory_process(&socket, database, root_path);
