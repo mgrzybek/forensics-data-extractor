@@ -131,6 +131,15 @@ class File_System_Wrapper
 		 * The path of the directory to scan
 		 */
 		QString		source_dir_path;
+
+#ifdef QT_5
+		/**
+		 * mime_type_database
+		 *
+		 * This object is used to determine files' MIMI-Types
+		 */
+		QMimeDatabase	mime_type_database;
+#endif
 };
 
 #endif // FILE_SYSTEM_WRAPPER_H

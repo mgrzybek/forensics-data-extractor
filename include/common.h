@@ -70,12 +70,19 @@ typedef	QHash<QString, regex_list>	h_dico;
 
 typedef struct {
 	QString	source;
-	QString	name;
 	qint64	inode;
-	qint64	size;
+
+	QString	name;
 	QString	full_path;
+	qint64	size;
+
+#ifdef QT_5
+	QMimeType	mime_type;
+#endif
+
 	QString	sha1;
 	QString	md5;
+
 	QString	extractor;
 	QString	node;
 } struct_file;
@@ -92,6 +99,11 @@ typedef struct {
 
 typedef QHash<QString, QString>			h_known_db_config;
 typedef QHash<QString, h_known_db_config>	hh_known_db_config;
+
+typedef enum {
+	DIRECTORY,
+	IMAGE
+} t_source_type;
 
 #endif // COMMON_H
 

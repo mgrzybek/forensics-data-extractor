@@ -63,6 +63,29 @@ class Database : public QObject
 		bool	exec(const QString& query);
 		bool	exec(const QStringList& queries);
 
+
+		/**
+		 * insert_source
+		 *
+		 * Insert a source file or directory into the analysis database
+		 *
+		 * @param	source	the source to add
+		 * @param	type	its type (file or image)
+		 *
+		 * @return	true (success)
+		 */
+		bool	insert_source(const QString& source, const t_source_type& type);
+
+
+		/**
+		 * get_sources
+		 *
+		 * Gets the sources from the analysis database
+		 *
+		 * @param	the list to update
+		 */
+		void	get_sources(QStringList& sources);
+
 		/**
 		 * insert_file
 		 *
@@ -151,7 +174,6 @@ class Database : public QObject
 		 * This method is not protected by a mutex
 		 *
 		 * @param	query	the query to exec
-		 *
 		 */
 		bool	atomic_exec(const QString& query);
 
@@ -160,7 +182,7 @@ class Database : public QObject
 		 *
 		 * The database is used to store the results
 		 */
-		QSqlDatabase	analysis_db;
+		QSqlDatabase*	analysis_db;
 
 		/**
 		 * analysis_mutex

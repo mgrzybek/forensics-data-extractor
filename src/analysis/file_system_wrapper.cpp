@@ -60,6 +60,7 @@ File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db, const QSt
 }
 
 void File_System_Wrapper::recursive_directories_search() {
+	database->insert_source(source_dir_path, DIRECTORY);
 	recursive_directories_search(source_dir_path);
 }
 
@@ -74,16 +75,19 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 	Q_FOREACH(QString file, files) {
 		struct_file	s_file;
 
-		// We need  to initialize these QString to prevent segfaults in checksum_calculator
+		// We need to initialize these QStrings to prevent segfaults in checksum_calculator
 		s_file.sha1 = "";
 		s_file.md5 = "";
 		s_file.source = source_dir_path;
 		s_file.full_path = dir_path;
-		s_file.full_path += "/";
 		s_file.full_path += file;
 		s_file.inode = -1;
 
 		QFileInfo	file_info(s_file.full_path);
+
+#ifdef QT_5
+		s_file.mime_type = mime_type_database.mimeTypeForFile(file_info);
+#endif
 
 		s_file.size = file_info.size();
 

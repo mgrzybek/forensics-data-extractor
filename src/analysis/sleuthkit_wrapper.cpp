@@ -63,6 +63,8 @@ void	Sleuthkit_Wrapper::image_process() {
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
 	TskImgInfo *img_info = new TskImgInfo();
 
+	database->insert_source(image_path, IMAGE);
+
 #if DO_HASHLOOKUP
 	/* Setup hash infrastructure */
 	if ((hdb_info = tsk_hdb_open(_TSK_T("/XXX/NSRLFile.txt"), TSK_HDB_OPEN_NONE)) == NULL) {

@@ -151,6 +151,15 @@ class Sleuthkit_Wrapper
 		 * The image file of process
 		 */
 		QString		source_image_path;
+
+#ifdef QT_5
+		/**
+		 * mime_type_database
+		 *
+		 * This object is used to determine files' MIMI-Types
+		 */
+		QMimeDatabase	mime_type_database;
+#endif
 };
 
 #endif // SLEUTHKIT_WRAPPER_H

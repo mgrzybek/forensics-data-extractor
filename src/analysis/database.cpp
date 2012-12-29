@@ -28,14 +28,15 @@
 #include "analysis/database.h"
 
 Database::Database(const QString& analysis_db_file) {
-	analysis_db = QSqlDatabase::addDatabase("QSQLITE", analysis_db_file);
-	analysis_db.setDatabaseName(analysis_db_file);
+	analysis_db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE", analysis_db_file));
+	analysis_db->setDatabaseName(analysis_db_file);
 
-	if ( analysis_db.open() == false ) {
+	if ( analysis_db->open() == false ) {
 		e.msg = "Cannot connect to the database ";
 		e.msg += analysis_db_file;
 		e.calling_method = "Database";
 
+		delete analysis_db;
 		throw e;
 	}
 
@@ -43,6 +44,8 @@ Database::Database(const QString& analysis_db_file) {
 		e.msg = "Cannot init the analysis database";
 		e.calling_method = "Database";
 
+		analysis_db->close();
+		delete analysis_db;
 		throw e;
 	}
 }
@@ -51,8 +54,9 @@ Database::~Database() {
 	// We never unlock the mutex because the object is destroyed
 	analysis_mutex.lock();
 
-	QString connection_name = analysis_db.databaseName();
-	analysis_db.close();
+	QString connection_name = analysis_db->databaseName();
+	analysis_db->close();
+	delete analysis_db;
 
 	QSqlDatabase::removeDatabase(connection_name);
 }
@@ -60,27 +64,27 @@ Database::~Database() {
 bool	Database::exec(const QString& query) {
 	analysis_mutex.lock();
 
-	if ( analysis_db.transaction() == false ) {
-		qCritical() << "Transaction begin failed: " << analysis_db.lastError().text();
-		analysis_db.rollback();
+	if ( analysis_db->transaction() == false ) {
+		qCritical() << "Transaction begin failed: " << analysis_db->lastError().text();
+		analysis_db->rollback();
 		qCritical() << "Rollback!";
 		analysis_mutex.unlock();
 		return false;
 	}
 
 	if ( atomic_exec(query) == false ) {
-		analysis_db.rollback();
+		analysis_db->rollback();
 		qCritical() << "Rollback!";
 		analysis_mutex.unlock();
 		return false;
 	}
 
-	if ( analysis_db.commit() == false ) {
-		qCritical() << "Commit failed: " << analysis_db.lastError().text();
-		analysis_db.rollback();
+	if ( analysis_db->commit() == false ) {
+		qCritical() << "Commit failed: " << analysis_db->lastError().text();
+		analysis_db->rollback();
 		qCritical() << "Rollback!";
 		analysis_mutex.unlock();
-		return  false;
+		return false;
 	}
 
 	analysis_mutex.unlock();
@@ -90,25 +94,25 @@ bool	Database::exec(const QString& query) {
 bool	Database::exec(const QStringList& queries) {
 	analysis_mutex.lock();
 
-	if ( analysis_db.transaction() == false ) {
-		qCritical() << "Transaction begin failed: " << analysis_db.lastError().text();
-		analysis_db.rollback();
+	if ( analysis_db->transaction() == false ) {
+		qCritical() << "Transaction begin failed: " << analysis_db->lastError().text();
+		analysis_db->rollback();
 		analysis_mutex.unlock();
 		return false;
 	}
 
 	Q_FOREACH(QString query, queries) {
 		if ( atomic_exec(query) == false ) {
-			analysis_db.rollback();
+			analysis_db->rollback();
 			qCritical() << "Rollback!";
 			analysis_mutex.unlock();
 			return false;
 		}
 	}
 
-	if ( analysis_db.commit() == false ) {
-		qCritical() << "Commit failed: " << analysis_db.lastError().text();
-		analysis_db.rollback();
+	if ( analysis_db->commit() == false ) {
+		qCritical() << "Commit failed: " << analysis_db->lastError().text();
+		analysis_db->rollback();
 		qCritical() << "Rollback!";
 		analysis_mutex.unlock();
 		return  false;
@@ -119,14 +123,14 @@ bool	Database::exec(const QStringList& queries) {
 }
 
 QSqlDatabase*	Database::get_analysis_db() {
-	return &analysis_db;
+	return analysis_db;
 }
 
 uint	Database::get_row_count(const QString& table_name) {
 	analysis_mutex.lock();
 
 	QString		query;
-	QSqlQuery	q(analysis_db);
+	QSqlQuery	q(*analysis_db);
 	uint		result = 0;
 
 	query = "SELECT COUNT(*) FROM " % table_name % " LIMIT 1;";
@@ -152,8 +156,14 @@ bool	Database::init_schema() {
 	queries << "CREATE TABLE IF NOT EXISTS search (name TEXT PRIMARY KEY, hits INTEGER NOT NULL);";
 	queries << "CREATE TABLE IF NOT EXISTS signon (host TEXT PRIMARY KEY, id TEXT NOT NULL, password TEXT NOT NULL );";
 
+	// Sources
+	queries << "CREATE TABLE IF NOT EXISTS source (source TEXT, type TEXT, PRIMARY KEY (source));";
 	// Files
-	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, PRIMARY KEY(source, file));";
+#ifdef QT_5
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, PRIMARY KEY(source, inode));";
+#else
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, mime_type TEXT NOT NULL, PRIMARY KEY(source, inode));";
+#endif
 
 	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
 	queries << "CREATE VIEW IF NOT EXISTS not_analysed_file AS SELECT file FROM parsed_file WHERE analysed = 0";
@@ -164,7 +174,7 @@ bool	Database::init_schema() {
 }
 
 bool	Database::atomic_exec(const QString& query) {
-	QSqlQuery	q(analysis_db);
+	QSqlQuery	q(*analysis_db);
 
 	if ( q.exec(query) == false ) {
 		qCritical() << "Atomic exec failed on" << query << " " << q.lastError().text();
@@ -175,16 +185,59 @@ bool	Database::atomic_exec(const QString& query) {
 	return true;
 }
 
+bool	Database::insert_source(const QString& source, const t_source_type& type) {
+	QString	query;
+
+	if ( source.isEmpty() == true ) {
+		qCritical() << "Database::insert_source: the source is empty!";
+		return false;
+	}
+
+	query = "INSERT INTO source (source, type) VALUES ('";
+	query += source % "','";
+
+	if ( type == IMAGE )
+		query += "image');";
+	else
+		query += "directory');";
+
+	return exec(query);
+}
+
+
+void	Database::get_sources(QStringList& sources) {
+	analysis_mutex.lock();
+
+	QString		query = "SELECT source FROM source;";
+	QSqlQuery	q(*analysis_db);
+
+	q.exec(query);
+
+	while ( q.next() == true ) {
+		sources << q.value(0).toString();
+	}
+
+	analysis_mutex.unlock();
+}
+
 bool	Database::insert_file(const struct_file& file) {
 	QString	query;
 
+#ifndef QT_5
 	if ( file.inode > -1 )
 		query = "INSERT INTO parsed_file (inode, source, file, size, md5, sha1) VALUES ('" % QString::number(file.inode) % "','";
 	else
 		query = "INSERT INTO parsed_file (source, file, size, md5, sha1) VALUES ('";
+#else
+	if ( file.inode > -1 )
+		query = "INSERT INTO parsed_file (mime_type, inode, source, file, size, md5, sha1, mime_type) VALUES ('" % QString::number(file.inode) % "','";
+	else
+		query = "INSERT INTO parsed_file (mime_type, source, file, size, md5, sha1) VALUES ('";
 
+	query += file.mime_type.name() % "','";
+#endif
 	// TODO: understand why formatValue does not work
-	//query += analysis_db.driver()->formatValue(file.full_path) % "','";
+	//query += analysis_db->driver()->formatValue(file.full_path) % "','";
 	query += file.source % "','";
 	query += file.full_path % "','";
 	query += QString::number(file.size) % "','";
@@ -195,8 +248,9 @@ bool	Database::insert_file(const struct_file& file) {
 }
 
 bool	Database::is_analysed_file(const struct_file& f) {
+	analysis_mutex.lock();
 	QString		query;
-	QSqlQuery	q(analysis_db);
+	QSqlQuery	q(*analysis_db);
 
 	query = "SELECT COUNT(*) FROM analysed_file WHERE file = '";
 	query += f.full_path;
@@ -204,19 +258,24 @@ bool	Database::is_analysed_file(const struct_file& f) {
 	q.exec(query);
 
 	if ( q.next() == true ) {
-		if ( q.value(0).toUInt() > 0 )
+		if ( q.value(0).toUInt() > 0 ) {
+			analysis_mutex.unlock();
 			return true;
+		}
 	}
 
+	analysis_mutex.unlock();
 	return false;
 }
 
 bool	Database::is_parsed_file(const struct_file& f) {
 	QString		query;
-	QSqlQuery	q(analysis_db);
+	QSqlQuery	q(*analysis_db);
 
 	query = "SELECT COUNT(*) FROM parsed_file WHERE file = '";
 	query += f.full_path;
+	query += " AND source = '";
+	query += f.source;
 	query += "' LIMIT 1;";
 	q.exec(query);
 
