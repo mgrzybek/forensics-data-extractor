@@ -71,7 +71,6 @@ class Main_Window : public QMainWindow
 		void	stop();
 
 	private slots:
-		void	on_browse_button_clicked();
 		void	on_scan_button_clicked();
 
 		void	update_info();
@@ -85,6 +84,13 @@ class Main_Window : public QMainWindow
 		void	on_index_button_clicked();
 
 		void	on_action_Save_Analysis_triggered();
+
+		void	on_push_add_image_clicked();
+		void	on_push_add_directory_clicked();
+
+		void	on_button_acquire_sources_clicked();
+
+		void on_check_analysis_auto_start_stateChanged(int arg1);
 
 	public slots:
 		void	refresh_models();
@@ -102,6 +108,8 @@ class Main_Window : public QMainWindow
 		Database*		db;
 		web_browser_models	web_models;
 
+		// sources to process
+		QSqlTableModel*		model_sources;
 		// scanned files
 		QSqlTableModel*		model_indexed_files;
 		// extracted files
@@ -116,22 +124,25 @@ class Main_Window : public QMainWindow
 		QString		strigi_daemon_path;
 
 		/*
+		 * Multi threading
+		 */
+		QThreadPool	thread_pool;
+
+		/*
 		 * Processing classes
 		 */
 		generic_database_list	known_files_databases;
-		Parsing_Engine*		search_engine;
-		Worker*				worker;
-		Receiver*			receiver;
+		Worker*			worker;
+		Receiver*		receiver;
 
-		Indexing_Engine*	index_engine;
-
-        QList<Generic_Database*>	g_db;
+		QList<Generic_Database*>	g_db;
 
 		bool	scan_in_progress;
 		bool	index_in_progress;
 
 		void	process_scan();
 		void	process_index();
+		void	process_acquisition();
 		void	init_models(QSqlDatabase& db);
 		void	clean_models();
 

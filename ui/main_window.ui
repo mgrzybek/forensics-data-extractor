@@ -16,83 +16,101 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QTabWidget" name="tab_results">
+     <widget class="QTabWidget" name="tab_web_results">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_fs">
        <attribute name="title">
-        <string>Sélection de la source</string>
+        <string>Sélection des sources</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="5" column="1" colspan="3">
+       <layout class="QVBoxLayout" name="verticalLayout_11">
+        <item>
+         <widget class="QTableView" name="view_sources"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="push_add_image">
+            <property name="text">
+             <string>Sélectionnez l'image à scanner</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="push_add_directory">
+            <property name="text">
+             <string>Sélectionnez le dossier local à scanner</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QCheckBox" name="check_post_checksum">
+            <property name="text">
+             <string>Calculer les sommes de contrôles des sources avant l'analyse</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="check_analysis_auto_start">
+            <property name="text">
+             <string>Lancer automatiquement l'analyse après l'acquisition</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="index_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Indexer</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="scan_button">
+           <widget class="QPushButton" name="button_acquire_sources">
             <property name="text">
-             <string>Scanner</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="browse_button">
-            <property name="text">
-             <string>Parcourir</string>
+             <string>Acquérir les sources</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
-        <item row="6" column="0" colspan="2">
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>684</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Configuration de l'analyse</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_14">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QCheckBox" name="check_use_networking">
+            <property name="text">
+             <string>Utiliser la grille de calcul distribué</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="check_local_extraction">
+            <property name="text">
+             <string>Analyser en local</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="5" column="0">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>600</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0" colspan="4">
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>793</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="3" column="0" colspan="4">
-         <widget class="QLineEdit" name="source_line"/>
-        </item>
-        <item row="6" column="2" colspan="2">
+        <item>
          <layout class="QFormLayout" name="formLayout">
           <property name="fieldGrowthPolicy">
            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
@@ -195,65 +213,21 @@
             </property>
            </widget>
           </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="known_files_label">
+            <property name="text">
+             <string>Fichiers connus</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLabel" name="kown_files_number">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
          </layout>
-        </item>
-        <item row="7" column="0" colspan="4">
-         <widget class="QTabWidget" name="tab_processing">
-          <property name="currentIndex">
-           <number>1</number>
-          </property>
-          <widget class="QWidget" name="tab_indexing">
-           <attribute name="title">
-            <string>Indexation</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_9">
-            <item>
-             <widget class="QTableView" name="indexed_list">
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOn</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_files_found">
-           <attribute name="title">
-            <string>Fichiers extraits</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_10">
-            <item>
-             <widget class="QTableView" name="extracted_list"/>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <spacer name="verticalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>137</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="1" column="0">
-         <widget class="QRadioButton" name="radio_image">
-          <property name="text">
-           <string>Sélectionnez l'image à scanner</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QRadioButton" name="radio_directory">
-          <property name="text">
-           <string>Sélectionnez le dossier personnel de l'utilisateur à scanner</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -513,4 +487,3 @@
  <resources/>
  <connections/>
 </ui>
-
