@@ -57,6 +57,11 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 //		qCritical() << "Cannot init the magic library";
 
 	continue_scan = true;
+
+	if ( autoDelete(true) == false ) {
+		error.msg = "Cannot set true on autoDelete";
+		throw error;
+	}
 }
 
 Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_database_list* known_f_dbs) : QRunnable() {
@@ -81,6 +86,11 @@ Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_data
 //		qCritical() << "Cannot init the magic library";
 
 	continue_scan = true;
+
+	if ( autoDelete(true) == false ) {
+		error.msg = "Cannot set true on autoDelete";
+		throw error;
+	}
 }
 
 Parsing_Engine::~Parsing_Engine() {
