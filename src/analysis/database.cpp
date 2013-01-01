@@ -160,9 +160,9 @@ bool	Database::init_schema() {
 	queries << "CREATE TABLE IF NOT EXISTS source (source TEXT, type TEXT, PRIMARY KEY (source));";
 	// Files
 #ifdef QT_5
-	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, PRIMARY KEY(source, inode));";
-#else
 	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, mime_type TEXT NOT NULL, PRIMARY KEY(source, inode));";
+#else
+	queries << "CREATE TABLE IF NOT EXISTS parsed_file (source TEXT, file TEXT, inode INTEGER DEFAULT NULL, size INTEGER NOT NULL, md5 TEXT, sha1 TEXT, analysed INTEGER DEFAULT '0', known TEXT default NULL, PRIMARY KEY(source, inode));";
 #endif
 
 	queries << "CREATE VIEW IF NOT EXISTS analysed_file AS SELECT file FROM parsed_file WHERE analysed = 1";
