@@ -63,8 +63,6 @@ void	Sleuthkit_Wrapper::image_process() {
 void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
 	TskImgInfo *img_info = new TskImgInfo();
 
-	database->insert_source(image_path, IMAGE);
-
 #if DO_HASHLOOKUP
 	/* Setup hash infrastructure */
 	if ((hdb_info = tsk_hdb_open(_TSK_T("/XXX/NSRLFile.txt"), TSK_HDB_OPEN_NONE)) == NULL) {
@@ -75,6 +73,7 @@ void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
 	if (tsk_hdb_hasindex(hdb_info, TSK_HDB_HTYPE_MD5_ID) == 0) {
 		delete img_info;
 		fprintf(stderr, "Hash database does not have an index (create one using hfind -i nsrl-md5 HASHFILE\n");
+		return;
 	}
 #endif
 
@@ -82,14 +81,17 @@ void	Sleuthkit_Wrapper::image_process(const QString& image_path) {
 		delete img_info;
 		fprintf(stderr, "Error opening file\n");
 		tsk_error_print(stderr);
+		return;
 	}
 
 	if (procVs(img_info, 0)) {
 		delete img_info;
 		tsk_error_print(stderr);
+		return;
 	}
 
-	delete img_info;
+	if ( img_info != NULL )
+		delete img_info;
 }
 
 uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_INUM_T dir_inum, const char *path) {
@@ -106,8 +108,8 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 	}
 
 	/* These should be dynamic lengths, but this is just a sample program.
-	 * Allocate heap space instead of stack to prevent overflow for deep
-	 * directories. */
+     * Allocate heap space instead of stack to prevent overflow for deep
+     * directories. */
 	if ((path2 = (char *) malloc(4096)) == NULL) {
 		return 1;
 	}
@@ -134,7 +136,7 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 
 		/* Ignore NTFS System files */
 		if ((TSK_FS_TYPE_ISNTFS(fs_file->getFsInfo()->getFsType())) &&
-			(const_cast<TskFsName *>(fs_file->getName())->getName()[0] == '$')) {
+		                (const_cast<TskFsName *>(fs_file->getName())->getName()[0] == '$')) {
 			fs_file->close();
 			continue;
 		}
@@ -146,12 +148,12 @@ uint8_t	Sleuthkit_Wrapper::procDir(TskFsInfo * fs_info, TSK_STACK * stack, TSK_I
 			ssize_t cnt;
 
 			/*
-			 * Note that we could also cycle through all of the attributes in the
-			 * file by using one of the tsk_fs_attr_get() functions and reading it
-			 * with tsk_fs_attr_read().  See the File Systems section of the Library
-			 * User's Guide for more details:
-			 * http://www.sleuthkit.org/sleuthkit/docs/api-docs/
-			 */
+	 * Note that we could also cycle through all of the attributes in the
+	 * file by using one of the tsk_fs_attr_get() functions and reading it
+	 * with tsk_fs_attr_read().  See the File Systems section of the Library
+	 * User's Guide for more details:
+	 * http://www.sleuthkit.org/sleuthkit/docs/api-docs/
+	 */
 
 			// read file contents
 			if (fs_file->getMeta()->getType() == TSK_FS_META_TYPE_REG) {
@@ -251,8 +253,8 @@ uint8_t	Sleuthkit_Wrapper::procFs(TskImgInfo * img_info, TSK_OFF_T start) {
 	if ((fs_info->open(img_info, start, TSK_FS_TYPE_DETECT)) == 1)
 	{
 		fprintf(stderr,
-			"Error opening file system in partition at offset %" PRIuOFF
-			"\n", start);
+		        "Error opening file system in partition at offset %" PRIuOFF
+		        "\n", start);
 		tsk_error_print(stderr);
 
 		/* We could do some carving on the volume data at this point */
@@ -313,7 +315,7 @@ uint8_t	Sleuthkit_Wrapper::procVs(TskImgInfo * img_info, TSK_OFF_T start) {
 			}
 			else {
 				if (procFs(img_info,
-					const_cast<TskVsPartInfo *>(vs_part)->getStart() * vs_info->getBlockSize())) {
+				           const_cast<TskVsPartInfo *>(vs_part)->getStart() * vs_info->getBlockSize())) {
 					// We could do more fancy error checking here to see the cause
 					// of the error or consider the allocation status of the volume...
 					tsk_error_reset();

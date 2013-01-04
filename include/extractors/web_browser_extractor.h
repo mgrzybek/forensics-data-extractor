@@ -35,10 +35,7 @@
 #include <QtSql>
 #include <QMap>
 
-#include <zmq.hpp>
-
-#include "common.h"
-#include "extractors/generic_extractor.h"
+#include "generic_extractor.h"
 
 class Web_Browser_Extractor : public Generic_Extractor
 {

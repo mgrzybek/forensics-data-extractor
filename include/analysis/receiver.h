@@ -13,7 +13,7 @@ class Receiver : public QThread
 	Q_OBJECT
 
 	public:
-		Receiver(void* z_context, Database* db);
+		Receiver(void* z_context, const std::string& z_pull_uri, Database* db);
 		~Receiver();
 
 		void	run();
@@ -23,6 +23,7 @@ class Receiver : public QThread
 
 	private:
 		zmq::context_t*	zmq_context;
+		std::string	zmq_pull_uri;
 		Database*	database;
 
 		Exception	error;

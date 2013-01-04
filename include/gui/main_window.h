@@ -71,8 +71,6 @@ class Main_Window : public QMainWindow
 		void	stop();
 
 	private slots:
-		void	on_scan_button_clicked();
-
 		void	update_info();
 
 		void	on_action_New_Analysis_triggered();
@@ -90,9 +88,11 @@ class Main_Window : public QMainWindow
 
 		void	on_button_acquire_sources_clicked();
 
-		void on_check_analysis_auto_start_stateChanged(int arg1);
+		void	on_check_analysis_auto_start_stateChanged(int arg1);
 
-	public slots:
+		void	on_push_start_analysis_clicked();
+
+public slots:
 		void	refresh_models();
 
 	private:
@@ -140,7 +140,7 @@ class Main_Window : public QMainWindow
 		bool	scan_in_progress;
 		bool	index_in_progress;
 
-		void	process_scan();
+		void	process_analysis();
 		void	process_index();
 		void	process_acquisition();
 		void	init_models(QSqlDatabase& db);

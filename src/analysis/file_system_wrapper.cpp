@@ -60,7 +60,7 @@ File_System_Wrapper::File_System_Wrapper(void* z_socket, Database* db, const QSt
 }
 
 void File_System_Wrapper::recursive_directories_search() {
-	database->insert_source(source_dir_path, DIRECTORY);
+	//    database->insert_source(source_dir_path, DIRECTORY);
 	recursive_directories_search(source_dir_path);
 }
 
@@ -80,6 +80,7 @@ void File_System_Wrapper::recursive_directories_search(const QString& dir_path) 
 		s_file.md5 = "";
 		s_file.source = source_dir_path;
 		s_file.full_path = dir_path;
+		s_file.full_path += "/";
 		s_file.full_path += file;
 		s_file.inode = -1;
 

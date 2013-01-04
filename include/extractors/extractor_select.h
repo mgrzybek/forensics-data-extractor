@@ -4,6 +4,7 @@
 #include "common.h"
 #include "extractors/chrome_extractor.h"
 #include "extractors/firefox_extractor.h"
+#include "extractors/internet_explorer_extractor.h"
 
 class Extractor_Select
 {

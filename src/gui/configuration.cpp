@@ -38,28 +38,10 @@ Configuration::Configuration(QWidget *parent) :
 
 	// Dealing with pre-defined values
 	settings.beginGroup("known_files_databases");
-	settings.beginGroup("nsrl");
-	ui->check_nsrl->setChecked(settings.value("check_state").toBool());
-	qDebug() << settings.value("check_state").toBool();
-	ui->nsrl_line_database->setText(settings.value("database").toString());
-	qDebug() << settings.value("database").toString();
-	ui->nsrl_line_driver->setText(settings.value("driver").toString());
-	qDebug() << settings.value("driver").toString();
-	ui->nsrl_line_hostname->setText(settings.value("hostname").toString());
-	qDebug() << settings.value("hostname").toString();
-	ui->nsrl_line_password->setText(settings.value("password").toString());
-	qDebug() << settings.value("password").toString();
-	ui->nsrl_line_port->setText(settings.value("port").toString());
-	qDebug() << settings.value("port").toString();
-	ui->nsrl_line_username->setText(settings.value("username").toString());
-	qDebug() << settings.value("username").toString();
-	settings.endGroup();
+	ui->list_dbs->addItems(settings.childGroups());
 	settings.endGroup();
 
-	if ( ui->check_nsrl->isChecked() == true )
-		enable_nsrl_lines(true);
-	else
-		enable_nsrl_lines(false);
+	ui->tab_db_info->setModel(&kf_dbs_model);
 }
 
 Configuration::~Configuration()
@@ -72,42 +54,29 @@ void Configuration::on_tool_string_daemon_path_clicked()
 	ui->line_strig_daemon_path->setText(QFileDialog::getOpenFileName(this, tr("Open File"), "", "Strigi Daemon"));
 }
 
-void Configuration::on_check_nsrl_stateChanged(int arg1)
-{
-	if ( arg1 == Qt::Unchecked ) {
-		enable_nsrl_lines(false);
-		return;
-	}
-	if ( arg1 == Qt::Checked ) {
-		enable_nsrl_lines(true);
-		return;
-	}
-}
-
-void	Configuration::enable_nsrl_lines(bool enabled)
-{
-	ui->nsrl_line_database->setEnabled(enabled);
-	ui->nsrl_line_hostname->setEnabled(enabled);
-	ui->nsrl_line_password->setEnabled(enabled);
-	ui->nsrl_line_port->setEnabled(enabled);
-	ui->nsrl_line_username->setEnabled(enabled);
-	ui->nsrl_line_driver->setEnabled(enabled);
-}
-
 void Configuration::on_buttonBox_accepted()
 {
 	QSettings	settings;
 
 	settings.beginGroup("known_files_databases");
-	settings.beginGroup("nsrl");
 
-	settings.setValue("check_state", ui->check_nsrl->isChecked());
-	settings.setValue("database", ui->nsrl_line_database->text());
-	settings.setValue("hostname", ui->nsrl_line_hostname->text());
-	settings.setValue("password", ui->nsrl_line_password->text());
-	settings.setValue("port", ui->nsrl_line_port->text());
-	settings.setValue("username", ui->nsrl_line_username->text());
-	settings.setValue("driver", ui->nsrl_line_driver->text());
+	settings.endGroup();
+}
+
+void Configuration::on_list_dbs_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+	QSettings	settings;
+	QStandardItem	new_item;
+
+	settings.beginGroup("known_files_databases");
+	settings.beginGroup(current->text());
+
+	Q_FOREACH( QString key, settings.allKeys()) {
+		new_item.appendRow(new QStandardItem(key));
+		new_item.appendRow(new QStandardItem(settings.value(key).toString()));
+	}
+
+	kf_dbs_model.appendRow(&new_item);
 
 	settings.endGroup();
 	settings.endGroup();

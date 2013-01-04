@@ -7,9 +7,11 @@
 #include <zmq.hpp>
 #include <string>
 
+#include "analysis/database.h"
 #include "extractors/generic_extractor.h"
 #include "extractors/chrome_extractor.h"
 #include "extractors/firefox_extractor.h"
+#include "extractors/internet_explorer_extractor.h"
 #include "common.h"
 
 typedef	QHash<QString, QRunnable*>	h_extractors;
@@ -20,6 +22,7 @@ class Worker : public QThread
 
 	public:
 		Worker(void* z_context, const std::string& input_uri, const std::string& output_uri);
+		Worker(void* z_context, Database* db, const std::string& output_uri);
 		~Worker();
 
 		void	run();
@@ -38,6 +41,10 @@ class Worker : public QThread
 		std::string			z_output_uri;
 
 		/*
+		 * DB stuff
+		 */
+		Database*	analysis_db;
+		/*
 		 * Threads stuff
 		 */
 		QThreadPool		thread_pool;
@@ -47,6 +54,8 @@ class Worker : public QThread
 		Exception			error;
 
 		void	start_class(const QString& header, const QString& file_path);
+		void	run_zmq();
+		void	run_database();
 };
 
 #endif // WORKER_H

@@ -51,24 +51,24 @@ bool    Indexing_Engine::create_conf_file() {
 	QString file_path = working_directory + "/" + "daemon.conf";
 	QFile   file(file_path);
 
-    if ( ! file.open(QIODevice::WriteOnly | QIODevice::Text) )
+	if ( ! file.open(QIODevice::WriteOnly | QIODevice::Text) )
 		return false;
 
 	QTextStream out(&file);
 	out << "<strigiDaemonConfiguration useDBus='1'>"
-		<< "      <repository name='localhost' writeable='1' pollingInterval='180' urlbase='' indexdir='./clucene' type='clucene'>";
+	    << "      <repository name='localhost' writeable='1' pollingInterval='180' urlbase='' indexdir='./clucene' type='clucene'>";
 
 	Q_FOREACH(QString folder, indexed_folders) {
 		out << "              <path path='" << folder << "'></path>";
 	}
 
 	out << "      </repository>"
-		<< "      <filters>"
-		<< "            <filter pattern='.*.directory/' include='1'></filter>"
-		<< "            <filter pattern='.*/' include='0'></filter>"
-		<< "            <filter pattern='.*' include='0'></filter>"
-		<< "      </filters>"
-		<< "</strigiDaemonConfiguration>";
+	    << "      <filters>"
+	    << "            <filter pattern='.*.directory/' include='1'></filter>"
+	    << "            <filter pattern='.*/' include='0'></filter>"
+	    << "            <filter pattern='.*' include='0'></filter>"
+	    << "      </filters>"
+	    << "</strigiDaemonConfiguration>";
 
 	file.close();
 	return true;

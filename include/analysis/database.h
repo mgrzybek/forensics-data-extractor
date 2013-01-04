@@ -160,6 +160,17 @@ class Database : public QObject
 		 */
 		uint	get_row_count(const QString& table_name);
 
+		/**
+		 * walk_files_to_extract
+		 *
+		 * Provides a way to walk the SQL table
+		 *
+		 * @param	result	the struct_file to get
+		 *
+		 * @return	true if there is a file to get
+		 */
+		bool	walk_files_to_extract(struct_file& result);
+
 	private:
 		/**
 		 * init_schema

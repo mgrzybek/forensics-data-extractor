@@ -28,6 +28,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <QListWidgetItem>
 #include <QFileDialog>
 #include <QDialog>
 
@@ -48,16 +49,13 @@ class Configuration : public QDialog
 
 	private slots:
 		void on_tool_string_daemon_path_clicked();
-
-		void on_check_nsrl_stateChanged(int arg1);
-
 		void on_buttonBox_accepted();
+		void on_list_dbs_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
-	private:
-		Ui::Configuration *ui;
+private:
+		Ui::Configuration	*ui;
 		generic_database_list*	generic_databases;
-
-		void	enable_nsrl_lines(bool enabled);
+		QStandardItemModel	kf_dbs_model;
 };
 
 #endif // CONFIGURATION_H

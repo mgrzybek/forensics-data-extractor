@@ -41,7 +41,13 @@ Web_Browser_Extractor::~Web_Browser_Extractor() {
 
 void Web_Browser_Extractor::run()
 {
-	files_filter();
+	try {
+		files_filter();
+	} catch (const std::exception& e) {
+		error.msg = e.what();
+		return;
+	}
+
 	set_file_to_analysed();
 	update_db_places();
 	update_db_search();

@@ -43,8 +43,8 @@ Firefox_Extractor::Firefox_Extractor(
 		const std::string& z_output_uri,
 		const QString& file_path
 	) : Web_Browser_Extractor(
-				z_context, z_output_uri, file_path
-			)
+		z_context, z_output_uri, file_path
+	)
 {
 	url_map.clear();
 }
@@ -68,10 +68,10 @@ void Firefox_Extractor::files_filter() {
 	if ( file_name.compare("places.sqlite") == 0 ) {
 		extract_places();
 	}
-//	if ( file_name.compare("search.sqlite") == 0 ) {
-//		extract_search();
-//	}
-	if ( file.compare("signons.sqlite") == 0 ) {
+	//	if ( file_name.compare("search.sqlite") == 0 ) {
+	//		extract_search();
+	//	}
+	if ( file_name.compare("signons.sqlite") == 0 ) {
 		extract_signons();
 	}
 }
@@ -118,37 +118,37 @@ void Firefox_Extractor::extract_cookies() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
-        QSqlField   name("name", QVariant::String);
-        QSqlField   value("value", QVariant::String);
-        QSqlField   host("host", QVariant::String);
-        QSqlField   path("path", QVariant::String);
-        QSqlField   expiration("expiration", QVariant::String);
-        QSqlField   secured("secured", QVariant::String);
-        QSqlField   http("http", QVariant::String);
-        QSqlField   last_accessed("last_accessed", QVariant::String);
+		QSqlField	name("name", QVariant::String);
+		QSqlField	value("value", QVariant::String);
+		QSqlField	host("host", QVariant::String);
+		QSqlField	path("path", QVariant::String);
+		QSqlField	expiration("expiration", QVariant::String);
+		QSqlField	secured("secured", QVariant::String);
+		QSqlField	http("http", QVariant::String);
+		QSqlField	last_accessed("last_accessed", QVariant::String);
 
 		query.exec("SELECT name, value, host, path, expiry, isSecure, isHttpOnly, lastAccessed FROM moz_cookies ORDER BY lastAccessed;");
 
 		while (query.next()) {
-            name.setValue(query.value(0));
-            value.setValue(query.value(1));
-            host.setValue(query.value(2));
-            path.setValue(query.value(3));
-            expiration.setValue(query.value(4));
-            secured.setValue(query.value(5));
-            http.setValue(query.value(6));
-            last_accessed.setValue(query.value(7));
+			name.setValue(query.value(0));
+			value.setValue(query.value(1));
+			host.setValue(query.value(2));
+			path.setValue(query.value(3));
+			expiration.setValue(query.value(4));
+			secured.setValue(query.value(5));
+			http.setValue(query.value(6));
+			last_accessed.setValue(query.value(7));
 
 			insert_query = "INSERT INTO cookie (name, value, host, path, expiration, secured, http, last_accessed) VALUES (";
 
-            insert_query += "'" % db.driver()->formatValue(name) % "',";
-            insert_query += "'" % db.driver()->formatValue(value) % "',";
-            insert_query += "'" % db.driver()->formatValue(host) % "',";
-            insert_query += "'" % db.driver()->formatValue(path) % "',";
-            insert_query += "'" % db.driver()->formatValue(expiration) % "',";
-            insert_query += "'" % db.driver()->formatValue(secured) % "',";
-            insert_query += "'" % db.driver()->formatValue(http) % "',";
-            insert_query += "'" % db.driver()->formatValue(last_accessed);
+			insert_query += "'" % db.driver()->formatValue(name) % "',";
+			insert_query += "'" % db.driver()->formatValue(value) % "',";
+			insert_query += "'" % db.driver()->formatValue(host) % "',";
+			insert_query += "'" % db.driver()->formatValue(path) % "',";
+			insert_query += "'" % db.driver()->formatValue(expiration) % "',";
+			insert_query += "'" % db.driver()->formatValue(secured) % "',";
+			insert_query += "'" % db.driver()->formatValue(http) % "',";
+			insert_query += "'" % db.driver()->formatValue(last_accessed);
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -167,22 +167,22 @@ void Firefox_Extractor::extract_downloads() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
-        QSqlField   name("name", QVariant::String);
-        QSqlField   source("source", QVariant::String);
-        QSqlField   mime("mime", QVariant::String);
+		QSqlField   name("name", QVariant::String);
+		QSqlField   source("source", QVariant::String);
+		QSqlField   mime("mime", QVariant::String);
 
 		query.exec("SELECT name, source, mimeType FROM moz_downloads ORDER BY startTime;");
 
 		while (query.next()) {
-            name.setValue(query.value(0));
-            source.setValue(query.value(1));
-            mime.setValue(query.value(2));
+			name.setValue(query.value(0));
+			source.setValue(query.value(1));
+			mime.setValue(query.value(2));
 
-            insert_query = "INSERT INTO download (name, source, mime) VALUES (";
-            insert_query += "'" % db.driver()->formatValue(name) % "',";
-            insert_query += "'" % db.driver()->formatValue(source) % "',";
-            insert_query += "'" % db.driver()->formatValue(mime);
-            insert_query += "');";
+			insert_query = "INSERT INTO download (name, source, mime) VALUES (";
+			insert_query += "'" % db.driver()->formatValue(name) % "',";
+			insert_query += "'" % db.driver()->formatValue(source) % "',";
+			insert_query += "'" % db.driver()->formatValue(mime);
+			insert_query += "');";
 
 			send_zmq(insert_query);
 		}
@@ -200,21 +200,21 @@ void Firefox_Extractor::extract_forms() {
 		QSqlQuery	query(db);
 		QString		insert_query;
 
-        QSqlField   host("host", QVariant::String);
-        QSqlField   id("id", QVariant::String);
-        QSqlField   password("password", QVariant::String);
+		QSqlField   host("host", QVariant::String);
+		QSqlField   id("id", QVariant::String);
+		QSqlField   password("password", QVariant::String);
 
 		query.exec("SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins ORDER BY hostname;");
 
 		while (query.next()) {
-            host.setValue(query.value(0));
-            id.setValue(query.value(1));
-            password.setValue(query.value(2));
+			host.setValue(query.value(0));
+			id.setValue(query.value(1));
+			password.setValue(query.value(2));
 
-            insert_query = "INSERT INTO form (host, id, password) VALUES (";
-            insert_query += "'" % db.driver()->formatValue(host) % "',";
-            insert_query += "'" % db.driver()->formatValue(id) % "',";
-            insert_query += "'" % db.driver()->formatValue(password);
+			insert_query = "INSERT INTO form (host, id, password) VALUES (";
+			insert_query += "'" % db.driver()->formatValue(host) % "',";
+			insert_query += "'" % db.driver()->formatValue(id) % "',";
+			insert_query += "'" % db.driver()->formatValue(password);
 			insert_query += "');";
 
 			send_zmq(insert_query);
@@ -252,21 +252,21 @@ void Firefox_Extractor::extract_signons() {
 		QSqlQuery 	query(db);
 		QString		insert_query;
 
-        QSqlField   host("host", QVariant::String);
-        QSqlField   id("id", QVariant::String);
-        QSqlField   password("password", QVariant::String);
+		QSqlField   host("host", QVariant::String);
+		QSqlField   id("id", QVariant::String);
+		QSqlField   password("password", QVariant::String);
 
 		query.exec("SELECT hostname, encryptedUsername, encryptedPassword FROM moz_logins ORDER BY hostname;");
 
 		while (query.next()) {
-            host.setValue(query.value(0));
-            id.setValue(query.value(1));
-            password.setValue(query.value(2));
+			host.setValue(query.value(0));
+			id.setValue(query.value(1));
+			password.setValue(query.value(2));
 
 			insert_query = "INSERT INTO signon (host, id, password) VALUES (";
-            insert_query += "'" % db.driver()->formatValue(host) % "',";
-            insert_query += "'" % db.driver()->formatValue(id) % "',";
-            insert_query += "'" % db.driver()->formatValue(password);
+			insert_query += "'" % db.driver()->formatValue(host) % "',";
+			insert_query += "'" % db.driver()->formatValue(id) % "',";
+			insert_query += "'" % db.driver()->formatValue(password);
 			insert_query += "');";
 
 			send_zmq(insert_query);

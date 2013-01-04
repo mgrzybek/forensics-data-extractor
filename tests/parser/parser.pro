@@ -38,6 +38,7 @@ CONFIG		+= thread
 INCLUDEPATH	+= ../../include
 
 include(../../qmake_conf/macx.pro)
+include(../../qmake_conf/linux.pro)
 include(../../qmake_conf/windows.pro)
 
 SOURCES		+= parser.cpp \

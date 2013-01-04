@@ -40,7 +40,7 @@ Main_Window::Main_Window(void* z_context, QWidget *parent) :
 
 	ui->setupUi(this);
 
-	ui->tab_web_results->setVisible(false);
+	ui->tab->setVisible(false);
 	ui->action_Close_Analysis->setDisabled(true);
 
 	scan_in_progress = false;
@@ -92,25 +92,11 @@ Main_Window::~Main_Window() {
 		delete model_sources;
 	}
 
-//	if ( db != NULL )
-//		delete db;
+	//	if ( db != NULL )
+	//		delete db;
 
 	if ( known_files_databases.isEmpty() == false )
 		known_files_databases.clear();
-}
-
-void Main_Window::on_scan_button_clicked() {
-	//	if ( scan_in_progress == true ) {
-	//		// TODO: send stop signal to the scanner
-	//		// TODO: change button's text
-	//		// TODO: set the bool to false
-	//		emit scan_stop();
-	//		ui->scan_button->setText("Scanner");
-	//
-	//	} else {
-	//		ui->scan_button->setText("Stop scanning");
-	process_scan();
-	//	}
 }
 
 void Main_Window::update_info() {
@@ -163,16 +149,31 @@ void Main_Window::update_info() {
 
 	if ( model_analysed_files != NULL ) {
 		model_analysed_files->select();
-//		ui->extracted_list->resizeColumnsToContents();
+		//		ui->extracted_list->resizeColumnsToContents();
 	}
+
+	model_sources->select();
 }
 
-void Main_Window::process_scan() {
+void Main_Window::process_analysis() {
+	if ( receiver == NULL ) {
+		receiver = new Receiver((void*)zmq_context, ZMQ_INPROC_RECEIVER_PULL, db);
+		receiver->start();
+	} else {
+		if ( receiver->isRunning() == false )
+			receiver->start();
+	}
 
-	if ( worker == NULL ) {
-		worker = new Worker((void*)zmq_context, ZMQ_INPROC_PARSER_PUSH, ZMQ_INPROC_RECEIVER_PULL);
-		connect(this, SIGNAL(stop()), worker, SLOT(stop()));
-		connect(worker, SIGNAL(refresh_models()), this, SLOT(refresh_models()));
+	if ( ui->check_local_extraction->isChecked() == true ) {
+		if ( worker == NULL ) {
+			if ( ui->check_analysis_auto_start->isChecked() == true )
+				worker = new Worker((void*)zmq_context, ZMQ_INPROC_PARSER_PUSH, ZMQ_INPROC_RECEIVER_PULL);
+			else
+				worker = new Worker((void*)zmq_context, db, ZMQ_INPROC_RECEIVER_PULL);
+
+			connect(this, SIGNAL(stop()), worker, SLOT(stop()));
+			connect(worker, SIGNAL(refresh_models()), this, SLOT(refresh_models()));
+		}
 	}
 
 	/*
@@ -189,14 +190,14 @@ void Main_Window::process_scan() {
 
 void Main_Window::process_index() {
 	QStringList folders;
-/*
-	if ( ui->source_line->text().isEmpty() == true ) {
-		qCritical() << "No folder to index!";
-		return;
-	}
+	/*
+    if ( ui->source_line->text().isEmpty() == true ) {
+	qCritical() << "No folder to index!";
+	return;
+    }
 
-	folders << ui->source_line->text();
-	qDebug() << folders;
+    folders << ui->source_line->text();
+    qDebug() << folders;
 */
 }
 
@@ -228,7 +229,7 @@ void Main_Window::init_models(QSqlDatabase& db) {
 	model_sources->setSort(1, Qt::DescendingOrder);
 	model_sources->select();
 	model_sources->setHeaderData(0, Qt::Horizontal, tr("Source"));
-	model_sources->setHeaderData(1, Qt::Horizontal, tr("type"));
+	model_sources->setHeaderData(1, Qt::Horizontal, tr("Type"));
 
 	model_indexed_files = new QSqlTableModel(0, db);
 	model_indexed_files->setTable("parsed_file");
@@ -325,8 +326,8 @@ void Main_Window::clean_models() {
 	ui->forms_view->setModel(web_models.forms);
 	ui->search_view->setModel(web_models.searches);
 	ui->signons_view->setModel(web_models.signons);
-//	ui->indexed_list->setModel(model_indexed_files);
-//	ui->extracted_list->setModel(model_analysed_files);
+	//	ui->indexed_list->setModel(model_indexed_files);
+	//	ui->extracted_list->setModel(model_analysed_files);
 	ui->view_sources->setModel(model_sources);
 }
 
@@ -363,7 +364,7 @@ void Main_Window::on_action_New_Analysis_triggered() {
 		ui->action_Open_Analysis->setDisabled(true);
 		ui->action_Quit->setDisabled(true);
 
-		ui->tab_web_results->setVisible(true);
+		ui->tab->setVisible(true);
 
 		//create_analysis_db(db_file);
 	}
@@ -405,10 +406,11 @@ void Main_Window::on_action_Open_Analysis_triggered() {
 	ui->action_New_Analysis->setDisabled(true);
 	ui->action_Open_Analysis->setDisabled(true);
 
-	ui->tab_web_results->setVisible(true);
+	ui->tab->setVisible(true);
 
 	init_models(*db->get_analysis_db());
 	update_info();
+	clean_models();
 }
 
 void Main_Window::on_action_Close_Analysis_triggered() {
@@ -419,7 +421,7 @@ void Main_Window::on_action_Close_Analysis_triggered() {
 	ui->action_Open_Analysis->setEnabled(true);
 	ui->action_Quit->setEnabled(true);
 
-	ui->tab_web_results->setVisible(false);
+	ui->tab->setVisible(false);
 
 	// TODO: stop the threads
 	// TODO: save the results : analyse's parameters
@@ -431,15 +433,15 @@ void Main_Window::on_action_Close_Analysis_triggered() {
 }
 /*
 bool Main_Window::create_analysis_db(const QString& db_file) {
-	return true;
+    return true;
 }
 
 bool Main_Window::open_analysis_db(const QString& db_file) {
-	return true;
+    return true;
 }
 
 bool Main_Window::save_analysis_db(QSqlQuery& query) {
-	return true;
+    return true;
 }
 */
 void Main_Window::refresh_models() {
@@ -504,13 +506,13 @@ void Main_Window::save_settings() {
 	settings.beginWriteArray("indexer");
 
 	/*
-	   for ( int row = 0 ; row < servers_model.rowCount() ; row++ ) {
-	   settings.setArrayIndex(row);
+       for ( int row = 0 ; row < servers_model.rowCount() ; row++ ) {
+       settings.setArrayIndex(row);
 
-	   settings.setValue("domain_name", servers_model.item(row, 0)->text());
-	   qDebug() << "domain_name : " << servers_model.item(row, 0)->text();
-	   }
-	 */
+       settings.setValue("domain_name", servers_model.item(row, 0)->text());
+       qDebug() << "domain_name : " << servers_model.item(row, 0)->text();
+       }
+     */
 
 	settings.endArray();
 	settings.endGroup();
@@ -536,19 +538,19 @@ void Main_Window::on_index_button_clicked() {
 
 void Main_Window::on_action_Save_Analysis_triggered() {
 	/*
-	QString db_analysis = working_directory + "/analysis.db";
-	qDebug() << db_analysis;
-	{
-		SQLITE_OPEN(db_analysis);
+    QString db_analysis = working_directory + "/analysis.db";
+    qDebug() << db_analysis;
+    {
+	SQLITE_OPEN(db_analysis);
 
-		QSqlQuery query(db);
+	QSqlQuery query(db);
 
-		init_analysis_db(query);
-		query.clear();
-	}
+	init_analysis_db(query);
+	query.clear();
+    }
 
-	SQLITE_CLOSE(db_analysis);
-	*/
+    SQLITE_CLOSE(db_analysis);
+    */
 }
 
 void Main_Window::on_push_add_image_clicked()
@@ -559,7 +561,11 @@ void Main_Window::on_push_add_image_clicked()
 	if ( image.exists() == true )
 		db->insert_source(selected_image, IMAGE);
 
-	model_sources->select();
+	if ( model_sources->select() == false ) {
+		qCritical() << "Cannot update the model";
+	}
+
+	ui->view_sources->setModel(model_sources);
 	ui->view_sources->resizeColumnsToContents();
 }
 
@@ -571,14 +577,18 @@ void Main_Window::on_push_add_directory_clicked()
 	if ( directory.exists(selected_directory) == true )
 		db->insert_source(selected_directory, DIRECTORY);
 
-	model_sources->select();
+	if ( model_sources->select() == false ) {
+		qCritical() << "Cannot update the model";
+	}
+
+	ui->view_sources->setModel(model_sources);
 	ui->view_sources->resizeColumnsToContents();
 }
 
 void Main_Window::on_button_acquire_sources_clicked()
 {
 	if ( ui->check_analysis_auto_start->isChecked() == true )
-		ui->tab_fs->setFocus();
+		ui->tab->setCurrentIndex(1);
 	else
 		process_acquisition();
 }
@@ -590,4 +600,10 @@ void Main_Window::on_check_analysis_auto_start_stateChanged(int arg1)
 		ui->button_acquire_sources->setText("Configurer l'analyse");
 	else
 		ui->button_acquire_sources->setText("Acquérir les sources");
+}
+
+void Main_Window::on_push_start_analysis_clicked()
+{
+	process_analysis();
+	// TODO: show a "work in progress" window
 }

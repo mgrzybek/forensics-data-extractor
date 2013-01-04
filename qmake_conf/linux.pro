@@ -23,15 +23,15 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-linux {
+linux-g++ {
 	LIBS += -L/opt/local/lib \
 	-L/usr/lib \
 	-L/usr/local/lib \
-	-lzmq \
-	-lssl \
+	-L/usr/lib/x86_64-linux-gnu \
 	-lcrypto \
 	-lz \
-	-tsk3
+	-lzmq \
+	-ltsk3
 
 	INCLUDEPATH += /usr/include \
 	/opt/local/include

@@ -23,21 +23,46 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+# Version's control
+contains(QT_VERSION, ^5\\.[0-9]\\..*) {
+	DEFINES	+= QT_5
+}
+
 QT		+= core sql
 
 TARGET		= db
 TEMPLATE	= app
 
+CONFIG		+= thread
+
 INCLUDEPATH	+= ../../include
 
+include(../../qmake_conf/macx.pro)
+include(../../qmake_conf/linux.pro)
+include(../../qmake_conf/windows.pro)
+
 SOURCES		+= extraction.cpp \
-			../../src/extractors/chrome_extractor.cpp \
-			../../src/extractors/extractor_select.cpp \
-			../../src/extractors/firefox_extractor.cpp \
-			../../src/extractors/generic_extractor.cpp \
-			../../src/extractors/web_browser_extractor.cpp \
-			../../src/extractors/worker.cpp
+		../../src/extractors/chrome_extractor.cpp \
+		../../src/extractors/extractor_select.cpp \
+		../../src/extractors/firefox_extractor.cpp \
+		../../src/extractors/internet_explorer_extractor.cpp \
+		../../src/extractors/generic_extractor.cpp \
+		../../src/extractors/web_browser_extractor.cpp \
+		../../src/extractors/worker.cpp \
+		../../src/analysis/database.cpp \
+		../../src/analysis/receiver.cpp \
+		../../src/exception.cpp
 
-HEADERS		+= thread.h \
-		../../include/database.h
-
+HEADERS		+= extraction.h \
+		../../include/analysis/database.h \
+		../../include/common.h \
+		../../include/extractors/chrome_extractor.h \
+		../../include/extractors/extractor_select.h \
+		../../include/extractors/firefox_extractor.h \
+		../../include/extractors/internet_explorer_extractor.h \
+		../../include/extractors/generic_extractor.h \
+		../../include/extractors/web_browser_extractor.h \
+		../../include/extractors/worker.h \
+		../../include/analysis/database.h \
+		../../include/analysis/receiver.h \
+		../../include/exception.h

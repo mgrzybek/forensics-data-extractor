@@ -43,7 +43,7 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 	}
 	root_path = r_path;
 
-//	magic_object = magic_open(MAGIC_CHECK);
+	//	magic_object = magic_open(MAGIC_CHECK);
 
 	if ( db == NULL ) {
 		e.msg = "Database is NULL";
@@ -53,14 +53,16 @@ Parsing_Engine::Parsing_Engine(void* z_context, const QString& r_path, Database*
 
 	known_files_dbs = known_f_dbs;
 
-//	if ( magic_object == NULL )
-//		qCritical() << "Cannot init the magic library";
+	//	if ( magic_object == NULL )
+	//		qCritical() << "Cannot init the magic library";
 
 	continue_scan = true;
 
-	if ( autoDelete(true) == false ) {
-		error.msg = "Cannot set true on autoDelete";
-		throw error;
+	setAutoDelete(true);
+
+	if ( autoDelete() == false ) {
+		e.msg = "Cannot set true on autoDelete";
+		throw e;
 	}
 }
 
@@ -71,7 +73,7 @@ Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_data
 	}
 	root_path = r_path;
 
-//	magic_object = magic_open(MAGIC_CHECK);
+	//	magic_object = magic_open(MAGIC_CHECK);
 
 	if ( db == NULL ) {
 		e.msg = "Database is NULL";
@@ -82,14 +84,16 @@ Parsing_Engine::Parsing_Engine(const QString& r_path, Database* db, generic_data
 	zmq_context = NULL;
 	known_files_dbs = known_f_dbs;
 
-//	if ( magic_object == NULL )
-//		qCritical() << "Cannot init the magic library";
+	//	if ( magic_object == NULL )
+	//		qCritical() << "Cannot init the magic library";
 
 	continue_scan = true;
 
-	if ( autoDelete(true) == false ) {
-		error.msg = "Cannot set true on autoDelete";
-		throw error;
+	setAutoDelete(true);
+
+	if ( autoDelete() == false ) {
+		e.msg = "Cannot set true on autoDelete";
+		throw e;
 	}
 }
 
@@ -107,6 +111,7 @@ void Parsing_Engine::run() {
 			if ( zmq_context != NULL ) {
 				zmq::socket_t	socket(*zmq_context, ZMQ_PUSH);
 
+				// TODO: use several URI to bind
 				socket.bind(ZMQ_INPROC_PARSER_PUSH);
 				qDebug() << e.calling_method << ": socket binded to " << ZMQ_INPROC_PARSER_PUSH;
 
@@ -149,9 +154,9 @@ void Parsing_Engine::send_zmq(const struct_file& file, zmq::socket_t& socket) {
 	 * Headers
 	 */
 	// send the target node
-//	zmq::message_t	z_msg_target(file.node.size() + 1);
-//	snprintf((char*)z_msg_target.data(), file.node.size() + 1, "%s", file.node.toAscii().constData());
-//	socket.send(z_msg_target, ZMQ_SENDMORE);
+	//	zmq::message_t	z_msg_target(file.node.size() + 1);
+	//	snprintf((char*)z_msg_target.data(), file.node.size() + 1, "%s", file.node.toAscii().constData());
+	//	socket.send(z_msg_target, ZMQ_SENDMORE);
 	// send the extractor
 	zmq::message_t	z_msg_extractor(file.extractor.size() + 1);
 #ifdef WINDOWS_OS
@@ -191,4 +196,3 @@ bool	Parsing_Engine::is_known(const struct_file& file) {
 
 	return false;
 }
-

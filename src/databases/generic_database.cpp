@@ -28,5 +28,5 @@
 #include "databases/generic_database.h"
 
 const char*	Generic_Database::get_name() {
-    return name.toLatin1().constData();
+	return name.toLatin1().constData();
 }

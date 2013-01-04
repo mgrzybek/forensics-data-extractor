@@ -5,6 +5,7 @@ Extractor_Select::Extractor_Select()
 	dico.clear();
 	dico.insert("chrome", Chrome_Extractor::get_regexes());
 	dico.insert("firefox", Firefox_Extractor::get_regexes());
+	dico.insert("internet_explorer", Internet_Explorer_Extractor::get_regexes());
 }
 
 Extractor_Select::~Extractor_Select() {

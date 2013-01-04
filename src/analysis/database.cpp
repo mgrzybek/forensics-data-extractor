@@ -176,12 +176,13 @@ bool	Database::init_schema() {
 bool	Database::atomic_exec(const QString& query) {
 	QSqlQuery	q(*analysis_db);
 
+	qDebug() << query;
+
 	if ( q.exec(query) == false ) {
 		qCritical() << "Atomic exec failed on" << query << " " << q.lastError().text();
 		return false;
 	}
 
-	qDebug() << query;
 	return true;
 }
 
@@ -206,8 +207,6 @@ bool	Database::insert_source(const QString& source, const t_source_type& type) {
 
 
 void	Database::get_sources(QStringList& sources) {
-	analysis_mutex.lock();
-
 	QString		query = "SELECT source FROM source;";
 	QSqlQuery	q(*analysis_db);
 
@@ -216,8 +215,6 @@ void	Database::get_sources(QStringList& sources) {
 	while ( q.next() == true ) {
 		sources << q.value(0).toString();
 	}
-
-	analysis_mutex.unlock();
 }
 
 bool	Database::insert_file(const struct_file& file) {
@@ -248,8 +245,7 @@ bool	Database::insert_file(const struct_file& file) {
 }
 
 bool	Database::is_analysed_file(const struct_file& f) {
-	analysis_mutex.lock();
-	QString		query;
+	QString	query;
 	QSqlQuery	q(*analysis_db);
 
 	query = "SELECT COUNT(*) FROM analysed_file WHERE file = '";
@@ -264,12 +260,11 @@ bool	Database::is_analysed_file(const struct_file& f) {
 		}
 	}
 
-	analysis_mutex.unlock();
 	return false;
 }
 
 bool	Database::is_parsed_file(const struct_file& f) {
-	QString		query;
+	QString	query;
 	QSqlQuery	q(*analysis_db);
 
 	query = "SELECT COUNT(*) FROM parsed_file WHERE file = '";
@@ -286,3 +281,34 @@ bool	Database::is_parsed_file(const struct_file& f) {
 
 	return false;
 }
+
+bool	Database::walk_files_to_extract(struct_file& result) {
+	static QSqlQuery	q(*analysis_db);
+	QString			query;
+
+#ifdef QT_5
+	query = "SELECT source,inode,file,size,sha1,md5,mime_type FROM parsed_file;";
+#else
+	query = "SELECT source,inode,file,size,sha1,md5 FROM parsed_file;";
+#endif
+
+	if ( q.isValid() == false )
+		q.exec(query);
+
+	if ( q.next() == true ) {
+		result.source = q.value(0).toString();
+		result.inode  = q.value(1).toUInt();
+		result.full_path = q.value(2).toString();
+		result.size = q.value(3).toUInt();
+		result.sha1 = q.value(4).toString();
+		result.md5 = q.value(5).toString();
+#ifdef QT_5
+		result.mime_type = q.value(6).toString();
+#endif
+		return true;
+	}
+
+	q.clear();
+	return false;
+}
+

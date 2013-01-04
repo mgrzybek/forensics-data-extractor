@@ -43,5 +43,5 @@ void	Exception::print() {
 }
 
 const char* Exception::what() const throw() {
-    return msg.toLatin1().constData();
+	return msg.toLatin1().constData();
 }

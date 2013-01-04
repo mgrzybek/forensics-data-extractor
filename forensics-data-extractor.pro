@@ -52,6 +52,7 @@ SOURCES		+= src/fde-console.cpp \
 		src/extractors/extractor_select.cpp \
 		src/extractors/web_browser_extractor.cpp \
 		src/extractors/chrome_extractor.cpp \
+		src/extractors/internet_explorer_extractor.cpp \
 		src/extractors/worker.cpp \
 		src/extractors/generic_extractor.cpp \
 		src/analysis/parsing_engine.cpp \
@@ -73,6 +74,7 @@ HEADERS		+= include/gui/main_window.h \
 		include/extractors/firefox_extractor.h \
 		include/extractors/web_browser_extractor.h \
 		include/extractors/chrome_extractor.h \
+		include/extractors/internet_explorer_extractor.h \
 		include/analysis/parsing_engine.h \
 		include/analysis/database.h \
 		include/analysis/checksum.h \
